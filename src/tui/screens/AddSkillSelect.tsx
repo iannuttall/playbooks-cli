@@ -1,7 +1,7 @@
 import { existsSync } from 'node:fs';
 import { mkdir, mkdtemp, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { basename, join } from 'node:path';
 import { Box, Text } from 'ink';
 import React from 'react';
 import { resolveRemoteSkill } from '../../flows/remote-skill.js';
@@ -178,6 +178,10 @@ export function AddSkillSelectScreen() {
           throw new Error(autoSelection.message);
         }
 
+        if (autoSelection.status === 'prompt' && autoSelection.message) {
+          setFlash(autoSelection.message);
+        }
+
         if (tempDir) {
           keepTempDir = true;
         }
@@ -202,7 +206,7 @@ export function AddSkillSelectScreen() {
     return () => {
       cancelled = true;
     };
-  }, [source, addSkill.skills, updateAddSkill, navigateTo, options]);
+  }, [source, addSkill.skills, updateAddSkill, navigateTo, options, setFlash]);
 
   React.useEffect(() => {
     if (invocation.source) {
@@ -326,18 +330,25 @@ export function AddSkillSelectScreen() {
   );
 }
 
-function autoSelect(skills: Skill[], options: { skill?: string[]; yes?: boolean }) {
+function matchesSkillName(skill: Skill, input: string): boolean {
+  const normalized = input.toLowerCase();
+  const byName = skill.name.toLowerCase() === normalized;
+  const byPath = basename(skill.path).toLowerCase() === normalized;
+  return byName || byPath;
+}
+
+function autoSelect(
+  skills: Skill[],
+  options: { skill?: string[]; yes?: boolean }
+):
+  | { status: 'selected'; skills: Skill[] }
+  | { status: 'prompt'; message?: string }
+  | { status: 'error'; message: string } {
   if (options.skill && options.skill.length > 0) {
-    const selected = skills.filter((s) =>
-      options.skill?.some(
-        (name) =>
-          s.name.toLowerCase() === name.toLowerCase() ||
-          getSkillDisplayName(s).toLowerCase() === name.toLowerCase()
-      )
-    );
+    const selected = skills.filter((s) => options.skill?.some((name) => matchesSkillName(s, name)));
     if (selected.length === 0) {
       return {
-        status: 'error',
+        status: 'prompt',
         message: `No matching skills found for: ${options.skill.join(', ')}`,
       } as const;
     }
