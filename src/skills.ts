@@ -10,7 +10,6 @@ const DENIED_SEGMENTS = new Set([
   '.git',
   'node_modules',
   '.github',
-  '.codex',
   'playbooks',
   'context',
   'prompts',
@@ -18,7 +17,6 @@ const DENIED_SEGMENTS = new Set([
   'backup',
   'dist',
   'deprecated',
-  '.opencode',
 ]);
 
 const normalizePath = (value: string) => value.replace(/^\/+/, '');
@@ -33,9 +31,6 @@ const isDeniedPath = (path: string): boolean => {
     if (!segment) continue;
     if (segment === '.claude-plugin') {
       continue;
-    }
-    if (segment.startsWith('.claude')) {
-      return true;
     }
     if (DENIED_SEGMENTS.has(segment)) {
       return true;
@@ -192,7 +187,6 @@ export async function discoverSkills(basePath: string, subpath?: string): Promis
     join(searchPath, '.agent/skills'),
     join(searchPath, '.agents/skills'),
     join(searchPath, '.cline/skills'),
-    join(searchPath, '.codex/skills'),
     join(searchPath, '.commandcode/skills'),
     join(searchPath, '.continue/skills'),
     join(searchPath, '.cursor/skills'),
