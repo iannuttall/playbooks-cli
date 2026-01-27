@@ -1,6 +1,6 @@
 {
   "name": "playbooks",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Install agent skills, MCPs and docs into your coding agents from any git repository.",
   "type": "module",
   "bin": {
