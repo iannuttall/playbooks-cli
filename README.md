@@ -1,26 +1,32 @@
 # playbooks
 
-Install agent skills onto your coding agents from any git repository.
+Install agent skills, MCPs and docs into your coding agents from any git repository.
 
-<!-- agent-list:start -->
-Supports **Opencode**, **Claude Code**, **Codex**, **Cursor**, and [23 more](#available-agents).
-<!-- agent-list:end -->
+Find skills to add at [playbooks.com](https://playbooks.com).
 
-## Quick Start
+Works with **OpenCode**, **Claude Code**, **Codex**, **Cursor**, plus [many more](#available-agents).
 
+## Quick start
+
+Launch the interactive menu:
 ```bash
-npx playbooks add-skill anthropics/skills
-# or
-npx playbooks skill add anthropics/skills
-# or
+npx playbooks
+```
+
+Install skills directly from a repo:
+```bash
 npx playbooks skill anthropics/skills
 ```
 
-## What are Agent skills?
+Install a single skill:
+```bash
+npx playbooks skill anthropics/skills --skill frontend-design
+```
+## What are agent skills?
 
-Agent skills are reusable instruction sets that extend your coding agent's capabilities. They're defined in `SKILL.md` files with YAML frontmatter containing a `name` and `description`.
+Agent skills are reusable instructions that teach your agent how to do things. It's a universal format that most AI coding tools now support, defined in a `SKILL.md` file with YAML frontmatter containing a `name` and `description`.
 
-Skills let agents perform specialized tasks like:
+Skills let your agents perform specialized tasks like:
 
 - Generating release notes from git history
 - Creating PRs following your team's conventions
@@ -28,33 +34,53 @@ Skills let agents perform specialized tasks like:
 
 ## Usage
 
-### Source Formats
+### Source formats
 
 The `<source>` argument accepts multiple formats:
 
+- GitHub shorthand
 ```bash
-# GitHub shorthand
-npx playbooks add-skill vercel-labs/agent-skills
+npx playbooks skill anthropics/skills
+```
 
-# Full GitHub URL
-npx playbooks add-skill https://github.com/vercel-labs/agent-skills
+- Full GitHub URL
+```bash
+npx playbooks skill https://github.com/anthropics/skills
+```
 
-# Direct path to a skill in a repo
-npx playbooks add-skill https://github.com/vercel-labs/agent-skills/tree/main/skills/frontend-design
+- Direct path to a skill in a repo
+```bash
+npx playbooks skill https://github.com/anthropics/skills/tree/main/skills/release-notes
+```
 
-# GitLab URL
-npx playbooks add-skill https://gitlab.com/org/repo
+- GitLab URL
+```bash
+npx playbooks skill https://gitlab.com/org/repo
+```
 
-# Any git URL
-npx playbooks add-skill git@github.com:vercel-labs/agent-skills.git
+- Any git URL
+```bash
+npx playbooks skill git@github.com:anthropics/skills.git
+```
 
-# Direct SKILL.md URL
-npx playbooks add-skill https://docs.example.com/skills/my-skill/SKILL.md
+- Direct SKILL.md URL
+```bash
+npx playbooks skill https://docs.example.com/skills/my-skill/SKILL.md
+```
 
-# Marketplace.json (path, URL, or owner/repo path)
-npx playbooks add-skill ./path/to/.claude-plugin/marketplace.json
-npx playbooks add-skill https://raw.githubusercontent.com/org/repo/main/.claude-plugin/marketplace.json
-npx playbooks add-skill org/repo/.claude-plugin/marketplace.json
+- Marketplace.json (path)
+```bash
+npx playbooks skill ./path/to/.claude-plugin/marketplace.json
+```
+
+- Marketplace.json (URL)
+```bash
+npx playbooks skill https://raw.githubusercontent.com/org/repo/main/.claude-plugin/marketplace.json
+```
+
+- Marketplace.json (owner/repo path)
+```bash
+npx playbooks skill org/repo/.claude-plugin/marketplace.json
 ```
 
 ### Options
@@ -71,37 +97,49 @@ npx playbooks add-skill org/repo/.claude-plugin/marketplace.json
 
 ### Examples
 
+- List skills in a repository
 ```bash
-# List skills in a repository
-npx playbooks add-skill vercel-labs/agent-skills --list
-
-# Install multiple specific skills
-npx playbooks add-skill vercel-labs/agent-skills --skill frontend-design --skill skill-creator
-
-# Install to specific agents
-npx playbooks add-skill vercel-labs/agent-skills -a claude-code -a opencode
-
-# Non-interactive installation (CI/CD friendly)
-npx playbooks add-skill vercel-labs/agent-skills --skill frontend-design -g -a claude-code -y
-
-# Install all skills from a repo
-npx playbooks add-skill vercel-labs/agent-skills -y -g
+npx playbooks skill anthropics/skills --list
 ```
 
-### Manage Installed Skills
-
+- Install multiple specific skills
 ```bash
-# List installed skills (interactive)
+npx playbooks skill anthropics/skills --skill release-notes --skill incident-summary
+```
+
+- Install to specific agents
+```bash
+npx playbooks skill anthropics/skills -a claude-code -a opencode
+```
+
+- Non-interactive installation (CI/CD friendly)
+```bash
+npx playbooks skill anthropics/skills --skill release-notes -g -a claude-code -y
+```
+
+- Install all skills from a repo
+```bash
+npx playbooks skill anthropics/skills -y -g
+```
+
+### Manage installed skills
+
+- List installed skills (interactive)
+```bash
 npx playbooks skill list
+```
 
-# Update installed skills
+- Update installed skills
+```bash
 npx playbooks skill update
+```
 
-# Remove skills (interactive)
+- Remove skills (interactive)
+```bash
 npx playbooks skill manage
 ```
 
-## Marketplace.json Support
+## Marketplace.json support
 
 Playbooks can ingest a Claude-style `marketplace.json` and pull skills from the plugins it lists.
 
@@ -140,7 +178,7 @@ Example with overrides:
 }
 ```
 
-## Available Agents
+## Available agents
 
 Skills can be installed to any of these supported agents. Use `-g, --global` to install to the global path instead of project-level.
 
@@ -185,11 +223,11 @@ Skills can be installed to any of these supported agents. Use `-g, --global` to 
 > }
 > ```
 
-## Agent Detection
+## Agent detection
 
 The CLI automatically detects which coding agents you have installed by checking for their configuration directories. If none are detected, you'll be prompted to select which agents to install to.
 
-## Creating Skills
+## Creating skills
 
 Skills are directories containing a `SKILL.md` file with YAML frontmatter:
 
@@ -213,12 +251,12 @@ Describe the scenarios where this skill should be used.
 2. Then, do that
 ```
 
-### Required Fields
+### Required fields
 
 - `name`: Unique identifier (lowercase, hyphens allowed)
 - `description`: Brief explanation of what the skill does
 
-### Skill Discovery
+### Skill discovery
 
 The CLI searches for skills in these locations within a repository:
 
@@ -308,16 +346,16 @@ This CLI collects anonymous usage data to help improve the tool. No personal inf
 To disable telemetry, set any of these environment variables:
 
 ```bash
-DISABLE_TELEMETRY=1 npx playbooks add-skill vercel-labs/agent-skills
+DISABLE_TELEMETRY=1 npx playbooks skill anthropics/skills
 # or
-DO_NOT_TRACK=1 npx playbooks add-skill vercel-labs/agent-skills
+DO_NOT_TRACK=1 npx playbooks skill anthropics/skills
 # or
-PLAYBOOKS_DISABLE_TELEMETRY=1 npx playbooks add-skill vercel-labs/agent-skills
+PLAYBOOKS_DISABLE_TELEMETRY=1 npx playbooks skill anthropics/skills
 ```
 
 Telemetry is also automatically disabled in CI environments.
 
-## Related Links
+## Related links
 
 - [Agent Skills Specification](https://agentskills.io)
 - [Amp Skills Documentation](https://ampcode.com/manual#agent-skills)

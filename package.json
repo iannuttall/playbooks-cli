@@ -1,7 +1,7 @@
 {
   "name": "playbooks",
-  "version": "0.1.0",
-  "description": "Playbooks CLI for installing agent skills",
+  "version": "0.1.1",
+  "description": "Install agent skills, MCPs and docs into your coding agents from any git repository.",
   "type": "module",
   "bin": {
     "playbooks": "./dist/index.js"
