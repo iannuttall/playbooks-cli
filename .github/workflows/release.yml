@@ -24,7 +24,13 @@ jobs:
       - run: npm ci
       - run: npm run check
 
+      - name: Clear npm token (use OIDC)
+        run: npm config delete //registry.npmjs.org/:_authToken || true
+
       - run: npm publish --access public --provenance
+        env:
+          NODE_AUTH_TOKEN: ""
+          NPM_TOKEN: ""
 
       - name: Create GitHub release
         uses: softprops/action-gh-release@v2
