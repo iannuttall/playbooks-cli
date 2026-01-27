@@ -1,0 +1,97 @@
+{
+  "name": "playbooks",
+  "version": "0.1.1",
+  "description": "Install agent skills, MCPs and docs into your coding agents from any git repository.",
+  "type": "module",
+  "bin": {
+    "playbooks": "./dist/index.js"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsup src/index.ts --format esm --dts --clean",
+    "dev": "tsx src/index.ts",
+    "test": "tsx scripts/execute-tests.ts",
+    "typecheck": "tsc --noEmit",
+    "check": "npm run build && npm run lint && npm run typecheck",
+    "prepublishOnly": "npm run check",
+    "lint": "biome check . && node scripts/check-max-lines.js",
+    "lint:fix": "biome check . --write",
+    "lint-staged": "lint-staged",
+    "format": "prettier --write 'src/**/*.{ts,tsx}' 'scripts/**/*.ts' 'tests/**/*.{ts,tsx}'",
+    "format:check": "prettier --check 'src/**/*.{ts,tsx}' 'scripts/**/*.ts' 'tests/**/*.{ts,tsx}'",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "src/**/*.{ts,tsx}": "prettier --write",
+    "scripts/**/*.ts": "prettier --write",
+    "tests/**/*.{ts,tsx}": "prettier --write"
+  },
+  "keywords": [
+    "cli",
+    "playbooks",
+    "agent-skills",
+    "skills",
+    "ai-agents",
+    "amp",
+    "antigravity",
+    "claude-code",
+    "clawdbot",
+    "cline",
+    "codex",
+    "command-code",
+    "continue",
+    "crush",
+    "cursor",
+    "droid",
+    "gemini-cli",
+    "github-copilot",
+    "goose",
+    "kilo",
+    "kiro-cli",
+    "mcpjam",
+    "opencode",
+    "openhands",
+    "pi",
+    "qoder",
+    "qwen-code",
+    "roo",
+    "trae",
+    "windsurf",
+    "zencoder",
+    "neovate"
+  ],
+  "homepage": "https://playbooks.com",
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "chalk": "^5.4.1",
+    "commander": "^13.1.0",
+    "gray-matter": "^4.0.3",
+    "ink": "^5.0.1",
+    "ink-select-input": "^6.0.0",
+    "ink-text-input": "^6.0.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "simple-git": "^3.27.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.17",
+    "@types/react-dom": "^18.3.0",
+    "@types/node": "^22.10.0",
+    "@biomejs/biome": "^1.9.4",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.7",
+    "prettier": "^3.8.1",
+    "tsup": "^8.3.5",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "packageManager": "npm@10.8.2"
+}
