@@ -12,6 +12,8 @@ export type Screen =
   | 'add-source'
   | 'add-marketplace-plugins'
   | 'add-marketplace-skills'
+  | 'find-skill-search'
+  | 'find-skill-results'
   | 'add-skill-select'
   | 'add-targets'
   | 'add-scope'
@@ -23,7 +25,14 @@ export type Screen =
   | 'manage'
   | 'update';
 
-export type CliIntent = 'none' | 'add-skill' | 'skill' | 'list' | 'manage' | 'update';
+export type CliIntent =
+  | 'none'
+  | 'add-skill'
+  | 'skill'
+  | 'find-skill'
+  | 'list'
+  | 'manage'
+  | 'update';
 
 export type CliInvocation = {
   intent: CliIntent;
@@ -54,4 +63,29 @@ export type AddSkillState = {
   planLines?: string[];
   installResults?: InstallResult[];
   installError?: string;
+};
+
+export type FindSkillMode = 'lexical' | 'semantic';
+
+export type FindSkillResult = {
+  id: number;
+  name: string;
+  description: string | null;
+  shortDescription: string | null;
+  repoOwner: string | null;
+  repoName: string | null;
+  path: string | null;
+  skillSlug: string | null;
+  primaryLanguage: string | null;
+  stars: number | null;
+  tags: string[] | null;
+  isOfficial: boolean;
+};
+
+export type FindSkillState = {
+  query?: string;
+  mode?: FindSkillMode;
+  status?: 'idle' | 'loading' | 'ready' | 'error';
+  results?: FindSkillResult[];
+  error?: string;
 };

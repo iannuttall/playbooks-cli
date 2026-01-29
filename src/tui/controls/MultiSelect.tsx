@@ -5,6 +5,7 @@ export type MultiSelectItem<T> = {
   value: T;
   label: string;
   hint?: string;
+  info?: string;
   disabled?: boolean;
 };
 
@@ -22,6 +23,7 @@ export function MultiSelect<T>({
   hint?: string;
 }) {
   const [cursor, setCursor] = React.useState(0);
+  const [infoIndex, setInfoIndex] = React.useState<number | null>(null);
   const [selected, setSelected] = React.useState<Set<number>>(
     new Set(
       initialSelected.length > 0
@@ -41,11 +43,28 @@ export function MultiSelect<T>({
   );
   const visible = items.slice(windowStart, windowStart + maxItems);
 
+  const truncate = (value: string, max = 100) => {
+    if (value.length <= max) return value;
+    return `${value.slice(0, max - 3)}...`;
+  };
+
   useInput((input, key) => {
     if (key.downArrow) {
-      setCursor((prev) => (prev + 1) % total);
+      setCursor((prev) => {
+        const next = (prev + 1) % total;
+        if (infoIndex !== null && infoIndex !== next) {
+          setInfoIndex(null);
+        }
+        return next;
+      });
     } else if (key.upArrow) {
-      setCursor((prev) => (prev - 1 + total) % total);
+      setCursor((prev) => {
+        const next = (prev - 1 + total) % total;
+        if (infoIndex !== null && infoIndex !== next) {
+          setInfoIndex(null);
+        }
+        return next;
+      });
     } else if (input === ' ') {
       setSelected((prev) => {
         const next = new Set(prev);
@@ -65,6 +84,8 @@ export function MultiSelect<T>({
         }
         return new Set(selectable);
       });
+    } else if (input === 'i' || input === 'I') {
+      setInfoIndex((prev) => (prev === cursor ? null : cursor));
     } else if (key.return) {
       const values = Array.from(selected)
         .map((index) => items[index]?.value)
@@ -87,7 +108,11 @@ export function MultiSelect<T>({
             <Text color={color}>
               {pointer} {marker} {item.label}
             </Text>
-            {item.hint ? (
+            {infoIndex === actualIndex && item.info ? (
+              <Text dimColor>
+                {'  '} {truncate(item.info)}
+              </Text>
+            ) : item.hint ? (
               <Text dimColor>
                 {'  '} {item.hint}
               </Text>

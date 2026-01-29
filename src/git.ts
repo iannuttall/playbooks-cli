@@ -13,6 +13,12 @@ export async function cloneRepo(url: string, ref?: string): Promise<string> {
   return tempDir;
 }
 
+export async function cloneRepoTo(url: string, destination: string, ref?: string): Promise<void> {
+  const git = simpleGit();
+  const cloneOptions = ref ? ['--depth', '1', '--branch', ref] : ['--depth', '1'];
+  await git.clone(url, destination, cloneOptions);
+}
+
 export async function cleanupTempDir(dir: string): Promise<void> {
   if (!isTempPathSafe(dir)) {
     throw new Error('Attempted to clean up directory outside of temp directory');

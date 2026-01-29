@@ -11,11 +11,16 @@ export function useKeyboardShortcuts() {
     stack,
     setInvocation,
     resetAddSkill,
+    resetFindSkill,
+    isTextInputActive,
     setLastSource,
     invocation,
   } = useNavigation();
 
   useInput((input, key) => {
+    if (isTextInputActive && !(key.ctrl && input === 'c')) {
+      return;
+    }
     if (key.escape || input === 'q') {
       exit();
       return;
@@ -26,6 +31,7 @@ export function useKeyboardShortcuts() {
         setLastSource(invocation.source);
       }
       resetAddSkill();
+      resetFindSkill();
       setInvocation({ intent: 'none', options: {} });
       resetTo('main');
       return;

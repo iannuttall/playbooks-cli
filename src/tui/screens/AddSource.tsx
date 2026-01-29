@@ -5,12 +5,27 @@ import { useNavigation } from '../context/navigation.js';
 import { Header } from '../ui/Header.js';
 
 export function AddSourceScreen() {
-  const { invocation, addSkill, updateAddSkill, navigateTo, setFlash, lastSource, setLastSource } =
-    useNavigation();
+  const {
+    invocation,
+    addSkill,
+    updateAddSkill,
+    navigateTo,
+    setFlash,
+    lastSource,
+    setLastSource,
+    setTextInputActive,
+  } = useNavigation();
   const [value, setValue] = React.useState(
     addSkill.source ?? invocation.source ?? lastSource ?? ''
   );
   const didAutofillRef = React.useRef(false);
+
+  React.useEffect(() => {
+    setTextInputActive(true);
+    return () => {
+      setTextInputActive(false);
+    };
+  }, [setTextInputActive]);
 
   React.useEffect(() => {
     const preset = addSkill.source ?? invocation.source;

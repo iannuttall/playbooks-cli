@@ -1,6 +1,6 @@
 import React, { createContext, useCallback, useContext, useMemo, useState } from 'react';
 import { cleanupTempDir } from '../../git.js';
-import type { AddSkillState, CliInvocation, Screen } from '../types.js';
+import type { AddSkillState, CliInvocation, FindSkillState, Screen } from '../types.js';
 
 type Flash = { id: number; text: string };
 type NavAction = 'push' | 'pop' | 'reset';
@@ -25,6 +25,12 @@ type NavState = {
   setAddSkill: (next: AddSkillState) => void;
   updateAddSkill: (patch: Partial<AddSkillState>) => void;
   resetAddSkill: () => void;
+  findSkill: FindSkillState;
+  setFindSkill: (next: FindSkillState) => void;
+  updateFindSkill: (patch: Partial<FindSkillState>) => void;
+  resetFindSkill: () => void;
+  isTextInputActive: boolean;
+  setTextInputActive: (active: boolean) => void;
 };
 
 const NavigationContext = createContext<NavState | null>(null);
@@ -49,6 +55,8 @@ export function NavigationProvider({
   const [flashes, setFlashes] = useState<Flash[]>([]);
   const [invocation, setInvocation] = useState<CliInvocation>(initialInvocation);
   const [addSkill, setAddSkill] = useState<AddSkillState>({});
+  const [findSkill, setFindSkill] = useState<FindSkillState>({ status: 'idle' });
+  const [isTextInputActive, setTextInputActive] = useState(false);
   const [navAction, setNavAction] = useState<NavAction>('reset');
   const [lastSource, setLastSource] = useState<string | null>(initialInvocation.source ?? null);
   const backHandlerRef = React.useRef<(() => boolean) | null>(null);
@@ -109,7 +117,7 @@ export function NavigationProvider({
 
   React.useEffect(() => {
     if (!addSkill.tempDir) return;
-    if (screen.startsWith('add-')) return;
+    if (screen.startsWith('add-') || screen.startsWith('find-')) return;
     cleanupTempDir(addSkill.tempDir).catch(() => {});
   }, [addSkill.tempDir, screen]);
 
@@ -119,6 +127,14 @@ export function NavigationProvider({
 
   const resetAddSkill = useCallback(() => {
     setAddSkill({});
+  }, []);
+
+  const updateFindSkill = useCallback((patch: Partial<FindSkillState>) => {
+    setFindSkill((prev) => ({ ...prev, ...patch }));
+  }, []);
+
+  const resetFindSkill = useCallback(() => {
+    setFindSkill({ status: 'idle' });
   }, []);
 
   const value = useMemo<NavState>(
@@ -144,6 +160,12 @@ export function NavigationProvider({
       setAddSkill,
       updateAddSkill,
       resetAddSkill,
+      findSkill,
+      setFindSkill,
+      updateFindSkill,
+      resetFindSkill,
+      isTextInputActive,
+      setTextInputActive,
     }),
     [
       screen,
@@ -159,6 +181,10 @@ export function NavigationProvider({
       addSkill,
       updateAddSkill,
       resetAddSkill,
+      findSkill,
+      updateFindSkill,
+      resetFindSkill,
+      isTextInputActive,
     ]
   );
 

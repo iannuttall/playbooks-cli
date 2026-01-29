@@ -12,6 +12,8 @@ import { AddScopeScreen } from './screens/AddScope.js';
 import { AddSkillSelectScreen } from './screens/AddSkillSelect.js';
 import { AddSourceScreen } from './screens/AddSource.js';
 import { AddTargetsScreen } from './screens/AddTargets.js';
+import { FindSkillResultsScreen } from './screens/FindSkillResults.js';
+import { FindSkillSearchScreen } from './screens/FindSkillSearch.js';
 import { ListScreen } from './screens/ListSkills.js';
 import { MainMenu } from './screens/MainMenu.js';
 import { ManageScreen } from './screens/ManageSkills.js';
@@ -32,6 +34,10 @@ export function ScreenRouter() {
         return <MarketplacePluginScreen />;
       case 'add-marketplace-skills':
         return <MarketplaceSkillScreen />;
+      case 'find-skill-search':
+        return <FindSkillSearchScreen />;
+      case 'find-skill-results':
+        return <FindSkillResultsScreen />;
       case 'add-skill-select':
         return <AddSkillSelectScreen />;
       case 'add-targets':

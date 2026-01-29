@@ -13,6 +13,11 @@ Launch the interactive menu:
 npx playbooks
 ```
 
+Find skills in the playbooks directory (Enter = fast search, Tab = semantic):
+```bash
+npx playbooks find skill
+```
+
 Install skills directly from a repo:
 ```bash
 npx playbooks skill anthropics/skills

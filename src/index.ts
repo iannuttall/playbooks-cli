@@ -100,6 +100,15 @@ skillCmd.action(async (source: string | undefined, options) => {
   );
 });
 
+const findCmd = program.command('find').description('Search the playbooks directory');
+
+findCmd
+  .command('skill')
+  .description('Find skills')
+  .action(async () => {
+    await launch({ intent: 'find-skill', options: {} }, 'find-skill-search');
+  });
+
 program.action(async () => {
   await launch({ intent: 'none', options: {} }, 'main');
 });
