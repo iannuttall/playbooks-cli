@@ -1,5 +1,6 @@
 import { Box, Text, useInput } from 'ink';
 import React from 'react';
+import { SINGLE_SELECT_HINT } from '../ui/hints.js';
 
 export type SingleSelectItem<T> = {
   value: T;
@@ -12,7 +13,7 @@ export function SingleSelect<T>({
   items,
   initialValue,
   onSubmit,
-  hint = 'Use ↑↓ to navigate, Enter to continue, m for main, q/esc to quit',
+  hint = SINGLE_SELECT_HINT,
 }: {
   items: SingleSelectItem<T>[];
   initialValue?: T;

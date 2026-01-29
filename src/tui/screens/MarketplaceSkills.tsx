@@ -6,6 +6,7 @@ import { getSkillDisplayName } from '../../skills.js';
 import { useNavigation } from '../context/navigation.js';
 import { MultiSelect } from '../controls/MultiSelect.js';
 import { AddFlowHeader } from '../ui/AddFlowHeader.js';
+import { BACK_QUIT_HINT } from '../ui/hints.js';
 import { useSpinnerFrame } from '../ui/spinner.js';
 
 type Status = 'loading' | 'ready' | 'error';
@@ -106,7 +107,7 @@ export function MarketplaceSkillScreen() {
       <Box flexDirection="column" padding={1}>
         <AddFlowHeader title="Marketplace scan failed" />
         <Text color="red">{error}</Text>
-        <Text dimColor>Press ← to go back, q/esc to quit</Text>
+        <Text dimColor>{BACK_QUIT_HINT}</Text>
       </Box>
     );
   }

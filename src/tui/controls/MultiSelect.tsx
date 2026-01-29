@@ -1,5 +1,6 @@
 import { Box, Text, useInput } from 'ink';
 import React from 'react';
+import { MULTI_SELECT_HINT } from '../ui/hints.js';
 
 export type MultiSelectItem<T> = {
   value: T;
@@ -14,7 +15,7 @@ export function MultiSelect<T>({
   initialSelected = [],
   onSubmit,
   limit = 10,
-  hint = 'Space to toggle, s to select all, Enter to continue, m for main, q/esc to quit',
+  hint = MULTI_SELECT_HINT,
 }: {
   items: MultiSelectItem<T>[];
   initialSelected?: T[];

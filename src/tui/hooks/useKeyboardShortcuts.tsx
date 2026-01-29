@@ -13,12 +13,33 @@ export function useKeyboardShortcuts() {
     resetAddSkill,
     resetFindSkill,
     isTextInputActive,
+    textInputEscMode,
     setLastSource,
     invocation,
   } = useNavigation();
 
   useInput((input, key) => {
-    if (isTextInputActive && !(key.ctrl && input === 'c')) {
+    if (isTextInputActive) {
+      if (key.escape) {
+        if (textInputEscMode === 'back') {
+          if (screen !== 'main') {
+            resetTo('main');
+            return;
+          }
+          exit();
+          return;
+        }
+        exit();
+        return;
+      }
+      if (key.ctrl && input === 'c') {
+        if (screen !== 'main') {
+          resetTo('main');
+        } else {
+          exit();
+        }
+        return;
+      }
       return;
     }
     if (key.escape || input === 'q') {

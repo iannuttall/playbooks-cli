@@ -20,12 +20,12 @@ npx playbooks find skill
 
 Install skills directly from a repo:
 ```bash
-npx playbooks skill anthropics/skills
+npx playbooks add skill anthropics/skills
 ```
 
 Install a single skill:
 ```bash
-npx playbooks skill anthropics/skills --skill frontend-design
+npx playbooks add skill anthropics/skills --skill frontend-design
 ```
 ## What are agent skills?
 
@@ -39,56 +39,63 @@ Skills let your agents perform specialized tasks like:
 
 ## Usage
 
+Playbooks uses an action/type command structure:
+- `npx playbooks add skill <source>`
+- `npx playbooks find skill`
+- `npx playbooks list skill`
+- `npx playbooks manage skill`
+- `npx playbooks update skill [skill-names...]`
+
 ### Source formats
 
 The `<source>` argument accepts multiple formats:
 
 - GitHub shorthand
 ```bash
-npx playbooks skill anthropics/skills
+npx playbooks add skill anthropics/skills
 ```
 
 - Full GitHub URL
 ```bash
-npx playbooks skill https://github.com/anthropics/skills
+npx playbooks add skill https://github.com/anthropics/skills
 ```
 
 - Direct path to a skill in a repo
 ```bash
-npx playbooks skill https://github.com/anthropics/skills/tree/main/skills/release-notes
+npx playbooks add skill https://github.com/anthropics/skills/tree/main/skills/release-notes
 ```
 
 - GitLab URL
 ```bash
-npx playbooks skill https://gitlab.com/org/repo
+npx playbooks add skill https://gitlab.com/org/repo
 ```
 
 - Any git URL
 ```bash
-npx playbooks skill git@github.com:anthropics/skills.git
+npx playbooks add skill git@github.com:anthropics/skills.git
 ```
 
 - Direct SKILL.md URL
 ```bash
-npx playbooks skill https://docs.example.com/skills/my-skill/SKILL.md
+npx playbooks add skill https://docs.example.com/skills/my-skill/SKILL.md
 ```
 
 - Marketplace.json (path)
 ```bash
-npx playbooks skill ./path/to/.claude-plugin/marketplace.json
+npx playbooks add skill ./path/to/.claude-plugin/marketplace.json
 ```
 
 - Marketplace.json (URL)
 ```bash
-npx playbooks skill https://raw.githubusercontent.com/org/repo/main/.claude-plugin/marketplace.json
+npx playbooks add skill https://raw.githubusercontent.com/org/repo/main/.claude-plugin/marketplace.json
 ```
 
 - Marketplace.json (owner/repo path)
 ```bash
-npx playbooks skill org/repo/.claude-plugin/marketplace.json
+npx playbooks add skill org/repo/.claude-plugin/marketplace.json
 ```
 
-### Options
+### Options (add skill)
 
 | Option                    | Description                                                                                                                                        |
 | ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -104,44 +111,44 @@ npx playbooks skill org/repo/.claude-plugin/marketplace.json
 
 - List skills in a repository
 ```bash
-npx playbooks skill anthropics/skills --list
+npx playbooks add skill anthropics/skills --list
 ```
 
 - Install multiple specific skills
 ```bash
-npx playbooks skill anthropics/skills --skill release-notes --skill incident-summary
+npx playbooks add skill anthropics/skills --skill release-notes --skill incident-summary
 ```
 
 - Install to specific agents
 ```bash
-npx playbooks skill anthropics/skills -a claude-code -a opencode
+npx playbooks add skill anthropics/skills -a claude-code -a opencode
 ```
 
 - Non-interactive installation (CI/CD friendly)
 ```bash
-npx playbooks skill anthropics/skills --skill release-notes -g -a claude-code -y
+npx playbooks add skill anthropics/skills --skill release-notes -g -a claude-code -y
 ```
 
 - Install all skills from a repo
 ```bash
-npx playbooks skill anthropics/skills -y -g
+npx playbooks add skill anthropics/skills -y -g
 ```
 
 ### Manage installed skills
 
 - List installed skills (interactive)
 ```bash
-npx playbooks skill list
+npx playbooks list skill
 ```
 
 - Update installed skills
 ```bash
-npx playbooks skill update
+npx playbooks update skill
 ```
 
 - Remove skills (interactive)
 ```bash
-npx playbooks skill manage
+npx playbooks manage skill
 ```
 
 ## Marketplace.json support
@@ -351,11 +358,11 @@ This CLI collects anonymous usage data to help improve the tool. No personal inf
 To disable telemetry, set any of these environment variables:
 
 ```bash
-DISABLE_TELEMETRY=1 npx playbooks skill anthropics/skills
+DISABLE_TELEMETRY=1 npx playbooks add skill anthropics/skills
 # or
-DO_NOT_TRACK=1 npx playbooks skill anthropics/skills
+DO_NOT_TRACK=1 npx playbooks add skill anthropics/skills
 # or
-PLAYBOOKS_DISABLE_TELEMETRY=1 npx playbooks skill anthropics/skills
+PLAYBOOKS_DISABLE_TELEMETRY=1 npx playbooks add skill anthropics/skills
 ```
 
 Telemetry is also automatically disabled in CI environments.

@@ -15,6 +15,7 @@ import { useNavigation } from '../context/navigation.js';
 import { MultiSelect } from '../controls/MultiSelect.js';
 import { SelectMenu } from '../controls/SelectMenu.js';
 import { Header } from '../ui/Header.js';
+import { BACK_QUIT_HINT } from '../ui/hints.js';
 
 type AgentSummary = { agent: AgentType; skills: InstalledSkill[] };
 
@@ -76,7 +77,7 @@ export function ManageScreen() {
       <Box flexDirection="column" padding={1}>
         <Header title="Remove skills" />
         <Text dimColor>No skills found yet.</Text>
-        <Text dimColor>Press ← to go back, q/esc to quit</Text>
+        <Text dimColor>{BACK_QUIT_HINT}</Text>
       </Box>
     );
   }

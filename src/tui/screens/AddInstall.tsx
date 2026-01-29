@@ -5,6 +5,7 @@ import { formatResultSummary } from '../../flows/install-summary.js';
 import { cleanupTempDir } from '../../git.js';
 import { useNavigation } from '../context/navigation.js';
 import { AddFlowHeader } from '../ui/AddFlowHeader.js';
+import { BACK_QUIT_HINT } from '../ui/hints.js';
 import { useSpinnerFrame } from '../ui/spinner.js';
 
 export function AddInstallScreen() {
@@ -80,7 +81,7 @@ export function AddInstallScreen() {
       <Box flexDirection="column" padding={1}>
         <AddFlowHeader title="Install failed" />
         <Text color="red">{error}</Text>
-        <Text dimColor>Press ← to go back, q/esc to quit</Text>
+        <Text dimColor>{BACK_QUIT_HINT}</Text>
       </Box>
     );
   }

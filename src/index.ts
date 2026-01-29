@@ -49,15 +49,56 @@ function initialAddSkillScreen(source?: string): Screen {
 
 applyAddSkillOptions(
   program
-    .command('add-skill [source]')
-    .description('Install skills onto coding agents')
+    .command('add-skill [source]', { hidden: true })
+    .description('Legacy: use playbooks add skill')
     .action(async (source: string | undefined, options) => {
       await launch({ intent: 'add-skill', source, options }, initialAddSkillScreen(source));
     })
 );
 
+const addCmd = program.command('add').description('Add resources to your agents');
+
+applyAddSkillOptions(
+  addCmd
+    .command('skill [source]')
+    .description('Add skills')
+    .action(async (source: string | undefined, options) => {
+      await launch({ intent: 'add-skill', source, options }, initialAddSkillScreen(source));
+    })
+);
+
+const listCmd = program.command('list').description('List installed resources');
+
+listCmd
+  .command('skill')
+  .description('List installed skills')
+  .action(async () => {
+    await launch({ intent: 'list', options: {} }, 'list');
+  });
+
+const manageCmd = program.command('manage').description('Remove installed resources');
+
+manageCmd
+  .command('skill')
+  .description('Remove installed skills')
+  .action(async () => {
+    await launch({ intent: 'manage', options: {} }, 'manage');
+  });
+
+const updateCmd = program.command('update').description('Update installed resources');
+
+updateCmd
+  .command('skill [skill-names...]')
+  .description('Update installed skills')
+  .option('--global', 'Only update global installs')
+  .option('--project', 'Only update project installs')
+  .option('-y, --yes', 'Skip prompts and update all matching skills')
+  .action(async (skillNames: string[] | undefined, options) => {
+    await launch({ intent: 'update', options, updateSkillNames: skillNames }, 'update');
+  });
+
 const skillCmd = applyAddSkillOptions(
-  program.command('skill [source]').description('Manage installed skills')
+  program.command('skill [source]', { hidden: true }).description('Legacy: use playbooks add skill')
 );
 
 applyAddSkillOptions(

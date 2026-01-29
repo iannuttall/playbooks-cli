@@ -2,8 +2,9 @@ import { Box } from 'ink';
 import SelectInput from 'ink-select-input';
 import type React from 'react';
 import { Divider } from '../ui/Divider.js';
-import { DEFAULT_HINT, HelpBar } from '../ui/HelpBar.js';
+import { HelpBar } from '../ui/HelpBar.js';
 import { SelectItem } from '../ui/SelectItem.js';
+import { MENU_HINT } from '../ui/hints.js';
 
 export type MenuItem<Value = string | number> = { label: string; value: Value };
 
@@ -21,7 +22,7 @@ const SelectInputTyped = SelectInput as unknown as <T>(
 export function SelectMenu<T extends MenuItem>({
   items,
   onSelect,
-  hint = DEFAULT_HINT,
+  hint = MENU_HINT,
   showDivider = false,
   itemComponent = SelectItem,
   limit,

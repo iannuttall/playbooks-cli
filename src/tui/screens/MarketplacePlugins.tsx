@@ -3,6 +3,7 @@ import React from 'react';
 import { useNavigation } from '../context/navigation.js';
 import { MultiSelect } from '../controls/MultiSelect.js';
 import { AddFlowHeader } from '../ui/AddFlowHeader.js';
+import { BACK_QUIT_HINT } from '../ui/hints.js';
 
 export function MarketplacePluginScreen() {
   const { invocation, addSkill, updateAddSkill, navigateTo, setFlash } = useNavigation();
@@ -30,7 +31,7 @@ export function MarketplacePluginScreen() {
       <Box flexDirection="column" padding={1}>
         <AddFlowHeader title="Marketplace plugins" />
         <Text dimColor>No plugins found.</Text>
-        <Text dimColor>Press ← to go back, q/esc to quit</Text>
+        <Text dimColor>{BACK_QUIT_HINT}</Text>
       </Box>
     );
   }
@@ -45,7 +46,7 @@ export function MarketplacePluginScreen() {
             {plugin.description ? <Text dimColor>{plugin.description}</Text> : null}
           </Box>
         ))}
-        <Text dimColor>Press ← to return, q/esc to quit</Text>
+        <Text dimColor>{BACK_QUIT_HINT}</Text>
       </Box>
     );
   }

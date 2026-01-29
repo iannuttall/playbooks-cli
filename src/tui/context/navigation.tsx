@@ -31,6 +31,8 @@ type NavState = {
   resetFindSkill: () => void;
   isTextInputActive: boolean;
   setTextInputActive: (active: boolean) => void;
+  textInputEscMode: 'quit' | 'back';
+  setTextInputEscMode: (mode: 'quit' | 'back') => void;
 };
 
 const NavigationContext = createContext<NavState | null>(null);
@@ -57,6 +59,7 @@ export function NavigationProvider({
   const [addSkill, setAddSkill] = useState<AddSkillState>({});
   const [findSkill, setFindSkill] = useState<FindSkillState>({ status: 'idle' });
   const [isTextInputActive, setTextInputActive] = useState(false);
+  const [textInputEscMode, setTextInputEscMode] = useState<'quit' | 'back'>('back');
   const [navAction, setNavAction] = useState<NavAction>('reset');
   const [lastSource, setLastSource] = useState<string | null>(initialInvocation.source ?? null);
   const backHandlerRef = React.useRef<(() => boolean) | null>(null);
@@ -166,6 +169,8 @@ export function NavigationProvider({
       resetFindSkill,
       isTextInputActive,
       setTextInputActive,
+      textInputEscMode,
+      setTextInputEscMode,
     }),
     [
       screen,
@@ -185,6 +190,7 @@ export function NavigationProvider({
       updateFindSkill,
       resetFindSkill,
       isTextInputActive,
+      textInputEscMode,
     ]
   );
 

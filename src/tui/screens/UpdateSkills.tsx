@@ -12,6 +12,12 @@ import type { SkillScope } from '../../installed-skills.js';
 import { useNavigation } from '../context/navigation.js';
 import { MultiSelect } from '../controls/MultiSelect.js';
 import { Header } from '../ui/Header.js';
+import {
+  BACK_QUIT_HINT,
+  UPDATE_EMPTY_HINT,
+  UPDATE_HINT_ALL,
+  UPDATE_HINT_NEEDS_ONLY,
+} from '../ui/hints.js';
 import { useSpinnerFrame } from '../ui/spinner.js';
 
 type Status = 'loading' | 'select' | 'running' | 'done' | 'empty';
@@ -122,9 +128,7 @@ export function UpdateScreen() {
       ? targets.filter((t) => t.status === 'needs-update')
       : targets;
     const defaults = selected;
-    const hint = showOnlyNeeds
-      ? 'Showing needs update only. u to show all, s to select all, m for main, q/esc to quit'
-      : 'u to show needs update only, s to select all, m for main, q/esc to quit';
+    const hint = showOnlyNeeds ? UPDATE_HINT_NEEDS_ONLY : UPDATE_HINT_ALL;
 
     if (showOnlyNeeds && visibleTargets.length === 0) {
       return (
@@ -135,7 +139,7 @@ export function UpdateScreen() {
             <Text dimColor>GitHub rate limit hit. Some skills may be marked unknown.</Text>
           ) : null}
           <Box marginTop={1}>
-            <Text dimColor>Press u to show all, m for main, q/esc to quit</Text>
+            <Text dimColor>{UPDATE_EMPTY_HINT}</Text>
           </Box>
         </Box>
       );
@@ -201,7 +205,7 @@ export function UpdateScreen() {
         <Text color="red">{`Failed: ${summary.failed.map(formatTargetLabel).join(', ')}`}</Text>
       ) : null}
       <Box marginTop={1}>
-        <Text dimColor>Press ← to return, q/esc to quit</Text>
+        <Text dimColor>{BACK_QUIT_HINT}</Text>
       </Box>
     </Box>
   );

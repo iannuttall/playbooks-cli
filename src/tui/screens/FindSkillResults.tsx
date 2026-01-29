@@ -5,6 +5,7 @@ import { useNavigation } from '../context/navigation.js';
 import { MultiSelect } from '../controls/MultiSelect.js';
 import type { FindSkillResult } from '../types.js';
 import { Header } from '../ui/Header.js';
+import { BACK_QUIT_HINT, FIND_RESULTS_HINT, FIND_SKILLS_HINT } from '../ui/hints.js';
 import { useSpinnerFrame } from '../ui/spinner.js';
 
 const formatStars = (value: number | null) => {
@@ -102,7 +103,10 @@ export function FindSkillResultsScreen() {
     return (
       <Box flexDirection="column" padding={1}>
         <Header title="No results" />
-        <Text dimColor>No skills found. Press left arrow to search again.</Text>
+        <Text dimColor>No skills found.</Text>
+        <Box marginTop={1}>
+          <Text dimColor>{BACK_QUIT_HINT}</Text>
+        </Box>
       </Box>
     );
   }
@@ -113,7 +117,7 @@ export function FindSkillResultsScreen() {
       <Box marginBottom={1} flexDirection="column">
         <Text>{`Query: ${query}`}</Text>
         <Text dimColor>{`Mode: ${modeLabel} search`}</Text>
-        <Text dimColor>Space to select one or more skills, then Enter to install.</Text>
+        <Text dimColor>{FIND_SKILLS_HINT}</Text>
       </Box>
       {status === 'error' ? (
         <Box marginBottom={1}>
@@ -128,7 +132,7 @@ export function FindSkillResultsScreen() {
         }))}
         onSubmit={handleSubmit}
         limit={10}
-        hint="Space to toggle, s to select all, i for info, Enter to install, q/esc to quit"
+        hint={FIND_RESULTS_HINT}
       />
     </Box>
   );

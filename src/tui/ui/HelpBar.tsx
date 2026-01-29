@@ -1,9 +1,8 @@
 import { Box, Text } from 'ink';
 import React from 'react';
+import { MENU_HINT } from './hints.js';
 
-export const DEFAULT_HINT = 'Use ↑↓ to navigate, Enter to select, m for main, q/esc to quit';
-
-export function HelpBar({ text = DEFAULT_HINT }: { text?: string }) {
+export function HelpBar({ text = MENU_HINT }: { text?: string }) {
   return (
     <Box marginTop={1}>
       <Text dimColor>{text}</Text>

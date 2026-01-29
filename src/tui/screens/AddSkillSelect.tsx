@@ -14,6 +14,7 @@ import type { Skill } from '../../types.js';
 import { useNavigation } from '../context/navigation.js';
 import { MultiSelect } from '../controls/MultiSelect.js';
 import { AddFlowHeader } from '../ui/AddFlowHeader.js';
+import { BACK_QUIT_HINT } from '../ui/hints.js';
 import { useSpinnerFrame } from '../ui/spinner.js';
 
 type Status = 'loading' | 'ready' | 'error' | 'list';
@@ -240,7 +241,7 @@ export function AddSkillSelectScreen() {
     return (
       <Box flexDirection="column" padding={1}>
         <AddFlowHeader title="Add skills" />
-        <Text>Missing source. Press ← to go back, q/esc to quit.</Text>
+        <Text>{`Missing source. ${BACK_QUIT_HINT}`}</Text>
       </Box>
     );
   }
@@ -266,7 +267,7 @@ export function AddSkillSelectScreen() {
         <AddFlowHeader title="Unable to load skills" />
         <Text color="red">{error}</Text>
         <Box marginTop={1}>
-          <Text dimColor>Press ← to go back, q/esc to quit</Text>
+          <Text dimColor>{BACK_QUIT_HINT}</Text>
         </Box>
       </Box>
     );
@@ -284,7 +285,7 @@ export function AddSkillSelectScreen() {
             {skill.description ? <Text dimColor>{skill.description}</Text> : null}
           </Box>
         ))}
-        <Text dimColor>Press ← to return, q/esc to quit</Text>
+        <Text dimColor>{BACK_QUIT_HINT}</Text>
       </Box>
     );
   }
@@ -293,7 +294,7 @@ export function AddSkillSelectScreen() {
     return (
       <Box flexDirection="column" padding={1}>
         <AddFlowHeader title="No skills found" />
-        <Text dimColor>Press ← to go back, q/esc to quit</Text>
+        <Text dimColor>{BACK_QUIT_HINT}</Text>
       </Box>
     );
   }

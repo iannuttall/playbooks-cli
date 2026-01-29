@@ -3,23 +3,25 @@ import TextInput from 'ink-text-input';
 import React from 'react';
 import { searchSkillDirectory } from '../../flows/find-skill.js';
 import { useNavigation } from '../context/navigation.js';
+import { useTextInput } from '../hooks/useTextInput.js';
 import type { FindSkillMode } from '../types.js';
 import { Header } from '../ui/Header.js';
+import { FIND_SEARCH_HINT, TEXT_INPUT_HINT } from '../ui/hints.js';
 import { useSpinnerFrame } from '../ui/spinner.js';
 
 export function FindSkillSearchScreen() {
-  const { findSkill, updateFindSkill, navigateTo, setFlash, setTextInputActive } = useNavigation();
+  const { findSkill, updateFindSkill, navigateTo, setFlash } = useNavigation();
   const [value, setValue] = React.useState(findSkill.query ?? '');
   const [status, setStatus] = React.useState<'idle' | 'loading' | 'error'>('idle');
   const [error, setError] = React.useState<string | null>(null);
   const spinner = useSpinnerFrame(status === 'loading');
-
-  React.useEffect(() => {
-    setTextInputActive(true);
-    return () => {
-      setTextInputActive(false);
-    };
-  }, [setTextInputActive]);
+  const { wrapOnChange } = useTextInput({
+    disabled: status === 'loading',
+    onClear: () => {
+      setValue('');
+      updateFindSkill({ query: '' });
+    },
+  });
 
   const runSearch = React.useCallback(
     async (mode: FindSkillMode) => {
@@ -58,11 +60,6 @@ export function FindSkillSearchScreen() {
 
   useInput((input, key) => {
     if (status === 'loading') return;
-    if (key.ctrl && input === 'd') {
-      setValue('');
-      updateFindSkill({ query: '' });
-      return;
-    }
     if (key.tab) {
       runSearch('semantic');
       return;
@@ -82,11 +79,11 @@ export function FindSkillSearchScreen() {
         <Text color="green">&gt; </Text>
         <TextInput
           value={value}
-          onChange={(next) => {
+          onChange={wrapOnChange((next) => {
             const cleaned = next.replace(/\t/g, '');
             setValue(cleaned);
             updateFindSkill({ query: cleaned });
-          }}
+          })}
           onSubmit={() => {
             if (status !== 'loading') {
               runSearch('lexical');
@@ -105,10 +102,10 @@ export function FindSkillSearchScreen() {
         </Box>
       ) : null}
       <Box marginTop={1}>
-        <Text dimColor>Enter for fast search, Tab for semantic search.</Text>
+        <Text dimColor>{FIND_SEARCH_HINT}</Text>
       </Box>
       <Box marginTop={1}>
-        <Text dimColor>Ctrl+D to clear, q/esc to quit</Text>
+        <Text dimColor>{TEXT_INPUT_HINT}</Text>
       </Box>
     </Box>
   );

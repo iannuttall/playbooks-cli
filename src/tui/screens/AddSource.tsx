@@ -1,31 +1,23 @@
-import { Box, Text, useInput } from 'ink';
+import { Box, Text } from 'ink';
 import TextInput from 'ink-text-input';
 import React from 'react';
 import { useNavigation } from '../context/navigation.js';
+import { useTextInput } from '../hooks/useTextInput.js';
 import { Header } from '../ui/Header.js';
+import { TEXT_INPUT_HINT } from '../ui/hints.js';
 
 export function AddSourceScreen() {
-  const {
-    invocation,
-    addSkill,
-    updateAddSkill,
-    navigateTo,
-    setFlash,
-    lastSource,
-    setLastSource,
-    setTextInputActive,
-  } = useNavigation();
+  const { invocation, addSkill, updateAddSkill, navigateTo, setFlash, lastSource, setLastSource } =
+    useNavigation();
   const [value, setValue] = React.useState(
     addSkill.source ?? invocation.source ?? lastSource ?? ''
   );
   const didAutofillRef = React.useRef(false);
-
-  React.useEffect(() => {
-    setTextInputActive(true);
-    return () => {
-      setTextInputActive(false);
-    };
-  }, [setTextInputActive]);
+  const { wrapOnChange } = useTextInput({
+    onClear: () => {
+      setValue('');
+    },
+  });
 
   React.useEffect(() => {
     const preset = addSkill.source ?? invocation.source;
@@ -34,12 +26,6 @@ export function AddSourceScreen() {
     updateAddSkill({ source: preset });
     navigateTo('add-skill-select');
   }, [addSkill.source, invocation.source, updateAddSkill, navigateTo]);
-
-  useInput((input, key) => {
-    if (key.ctrl && input === 'd') {
-      setValue('');
-    }
-  });
 
   const onSubmit = (input: string) => {
     const trimmed = input.trim();
@@ -63,10 +49,10 @@ export function AddSourceScreen() {
       </Box>
       <Box>
         <Text color="green">&gt; </Text>
-        <TextInput value={value} onChange={setValue} onSubmit={onSubmit} />
+        <TextInput value={value} onChange={wrapOnChange(setValue)} onSubmit={onSubmit} />
       </Box>
       <Box marginTop={1}>
-        <Text dimColor>Press ← to go back, Ctrl+D to clear, q/esc to quit</Text>
+        <Text dimColor>{TEXT_INPUT_HINT}</Text>
       </Box>
     </Box>
   );

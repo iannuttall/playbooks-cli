@@ -18,7 +18,6 @@ export function MainMenu() {
     <Box flexDirection="column" padding={1}>
       <SelectMenu
         items={items}
-        hint="Use ↑↓ to navigate, Enter to select, m for main, q/esc to quit"
         onSelect={(item) => {
           switch (item.value) {
             case 'add':
