@@ -7,6 +7,7 @@ import packageJson from '../package.json' with { type: 'json' };
 import { agents } from './agents.js';
 import { type SearchOutcome, searchSkillDirectory } from './flows/find-skill.js';
 import { consumeUrlMarkdownOutput } from './flows/url-markdown-output.js';
+import { fetchUrlMarkdown } from './playbooks-api.js';
 import { setVersion } from './telemetry.js';
 import { setupTempDirCleanup } from './temp-registry.js';
 import { runApp } from './tui/App.js';
@@ -243,6 +244,35 @@ program
           process.exit(1);
         }
         outputPath = outPath;
+      }
+
+      const shouldUseTui = Boolean(process.stdout.isTTY) && !outputPath;
+
+      if (!shouldUseTui) {
+        try {
+          const data = await fetchUrlMarkdown(url);
+          if (outputPath) {
+            if (options.json) {
+              writeFileSync(outputPath, `${JSON.stringify(data, null, 2)}\n`, 'utf8');
+              return;
+            }
+            const body = data.markdown.endsWith('\n') ? data.markdown : `${data.markdown}\n`;
+            writeFileSync(outputPath, body, 'utf8');
+            return;
+          }
+
+          if (options.json) {
+            process.stdout.write(`${JSON.stringify(data, null, 2)}\n`);
+            return;
+          }
+          const body = data.markdown.endsWith('\n') ? data.markdown : `${data.markdown}\n`;
+          process.stdout.write(body);
+          return;
+        } catch (error) {
+          const message = error instanceof Error ? error.message : 'Failed to fetch markdown.';
+          console.error(`Failed to fetch markdown: ${message}`);
+          process.exit(1);
+        }
       }
 
       await runApp(
