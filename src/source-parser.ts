@@ -74,9 +74,11 @@ function isDirectSkillUrl(input: string): boolean {
  * Supports: local paths, GitHub URLs, GitLab URLs, GitHub shorthand, direct skill.md URLs, and direct git URLs
  */
 export function parseSource(input: string): ParsedSource {
+  let normalizedInput = input;
+
   // Local path: absolute, relative, or current directory
-  if (isLocalPath(input)) {
-    const resolvedPath = resolve(input);
+  if (isLocalPath(normalizedInput)) {
+    const resolvedPath = resolve(normalizedInput);
     // Return local type even if path doesn't exist - we'll handle validation in main flow
     return {
       type: 'local',
@@ -85,16 +87,23 @@ export function parseSource(input: string): ParsedSource {
     };
   }
 
+  // Normalize scheme-less domain inputs (e.g., mintlify.com/docs -> https://mintlify.com/docs)
+  if (shouldPrefixHttps(normalizedInput)) {
+    normalizedInput = `https://${normalizedInput}`;
+  }
+
   // Direct skill.md URL (non-GitHub/GitLab): https://docs.bun.com/docs/skill.md
-  if (isDirectSkillUrl(input)) {
+  if (isDirectSkillUrl(normalizedInput)) {
     return {
       type: 'direct-url',
-      url: input,
+      url: normalizedInput,
     };
   }
 
   // GitHub URL with path: https://github.com/owner/repo/tree/branch/path/to/skill
-  const githubTreeWithPathMatch = input.match(/github\.com\/([^/]+)\/([^/]+)\/tree\/([^/]+)\/(.+)/);
+  const githubTreeWithPathMatch = normalizedInput.match(
+    /github\.com\/([^/]+)\/([^/]+)\/tree\/([^/]+)\/(.+)/
+  );
   if (githubTreeWithPathMatch) {
     const [, owner, repo, ref, subpath] = githubTreeWithPathMatch;
     return {
@@ -106,7 +115,7 @@ export function parseSource(input: string): ParsedSource {
   }
 
   // GitHub URL with branch only: https://github.com/owner/repo/tree/branch
-  const githubTreeMatch = input.match(/github\.com\/([^/]+)\/([^/]+)\/tree\/([^/]+)$/);
+  const githubTreeMatch = normalizedInput.match(/github\.com\/([^/]+)\/([^/]+)\/tree\/([^/]+)$/);
   if (githubTreeMatch) {
     const [, owner, repo, ref] = githubTreeMatch;
     return {
@@ -117,7 +126,7 @@ export function parseSource(input: string): ParsedSource {
   }
 
   // GitHub URL: https://github.com/owner/repo
-  const githubRepoMatch = input.match(/github\.com\/([^/]+)\/([^/]+)/);
+  const githubRepoMatch = normalizedInput.match(/github\.com\/([^/]+)\/([^/]+)/);
   if (githubRepoMatch) {
     const [, owner, repo] = githubRepoMatch;
     const cleanRepo = repo?.replace(/\.git$/, '');
@@ -128,7 +137,7 @@ export function parseSource(input: string): ParsedSource {
   }
 
   // GitLab URL with path: https://gitlab.com/owner/repo/-/tree/branch/path
-  const gitlabTreeWithPathMatch = input.match(
+  const gitlabTreeWithPathMatch = normalizedInput.match(
     /gitlab\.com\/([^/]+)\/([^/]+)\/-\/tree\/([^/]+)\/(.+)/
   );
   if (gitlabTreeWithPathMatch) {
@@ -142,7 +151,7 @@ export function parseSource(input: string): ParsedSource {
   }
 
   // GitLab URL with branch only: https://gitlab.com/owner/repo/-/tree/branch
-  const gitlabTreeMatch = input.match(/gitlab\.com\/([^/]+)\/([^/]+)\/-\/tree\/([^/]+)$/);
+  const gitlabTreeMatch = normalizedInput.match(/gitlab\.com\/([^/]+)\/([^/]+)\/-\/tree\/([^/]+)$/);
   if (gitlabTreeMatch) {
     const [, owner, repo, ref] = gitlabTreeMatch;
     return {
@@ -153,7 +162,7 @@ export function parseSource(input: string): ParsedSource {
   }
 
   // GitLab URL: https://gitlab.com/owner/repo
-  const gitlabRepoMatch = input.match(/gitlab\.com\/([^/]+)\/([^/]+)/);
+  const gitlabRepoMatch = normalizedInput.match(/gitlab\.com\/([^/]+)\/([^/]+)/);
   if (gitlabRepoMatch) {
     const [, owner, repo] = gitlabRepoMatch;
     const cleanRepo = repo?.replace(/\.git$/, '');
@@ -165,8 +174,13 @@ export function parseSource(input: string): ParsedSource {
 
   // GitHub shorthand: owner/repo or owner/repo/path/to/skill
   // Exclude paths that start with . or / to avoid matching local paths
-  const shorthandMatch = input.match(/^([^/]+)\/([^/]+)(?:\/(.+))?$/);
-  if (shorthandMatch && !input.includes(':') && !input.startsWith('.') && !input.startsWith('/')) {
+  const shorthandMatch = normalizedInput.match(/^([^/]+)\/([^/]+)(?:\/(.+))?$/);
+  if (
+    shorthandMatch &&
+    !normalizedInput.includes(':') &&
+    !normalizedInput.startsWith('.') &&
+    !normalizedInput.startsWith('/')
+  ) {
     const [, owner, repo, subpath] = shorthandMatch;
     return {
       type: 'github',
@@ -175,9 +189,69 @@ export function parseSource(input: string): ParsedSource {
     };
   }
 
+  // Well-known skills: arbitrary HTTP(S) URLs that aren't GitHub/GitLab
+  // This is the final fallback for URLs - we'll check for /.well-known/skills/index.json
+  if (isWellKnownUrl(normalizedInput)) {
+    return {
+      type: 'well-known',
+      url: normalizedInput,
+    };
+  }
+
   // Fallback: treat as direct git URL
   return {
     type: 'git',
-    url: input,
+    url: normalizedInput,
   };
+}
+
+/**
+ * Check if a URL could be a well-known skills endpoint.
+ * Must be HTTP(S) and not a known git host (GitHub, GitLab).
+ * Also excludes URLs that look like git repos (.git suffix).
+ */
+function isWellKnownUrl(input: string): boolean {
+  if (!input.startsWith('http://') && !input.startsWith('https://')) {
+    return false;
+  }
+
+  try {
+    const parsed = new URL(input);
+
+    const excludedHosts = [
+      'github.com',
+      'gitlab.com',
+      'huggingface.co',
+      'raw.githubusercontent.com',
+    ];
+    if (excludedHosts.includes(parsed.hostname)) {
+      return false;
+    }
+
+    if (input.toLowerCase().endsWith('/skill.md')) {
+      return false;
+    }
+
+    if (input.endsWith('.git')) {
+      return false;
+    }
+
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function shouldPrefixHttps(input: string): boolean {
+  if (input.startsWith('http://') || input.startsWith('https://')) {
+    return false;
+  }
+
+  // Avoid scp-like git URLs: git@github.com:owner/repo.git
+  const firstSegment = input.split('/')[0] ?? '';
+  if (!firstSegment || firstSegment.includes('@')) {
+    return false;
+  }
+
+  return firstSegment.includes('.');
 }

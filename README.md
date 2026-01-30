@@ -39,7 +39,7 @@ Skills let your agents perform specialized tasks like:
 
 ## Usage
 
-Playbooks uses an action/type command structure:
+playbooks uses an action/type command structure:
 - `npx playbooks add skill <source>`
 - `npx playbooks find skill`
 - `npx playbooks list skill`
@@ -94,6 +94,12 @@ npx playbooks add skill git@github.com:anthropics/skills.git
 npx playbooks add skill https://docs.example.com/skills/my-skill/SKILL.md
 ```
 
+- Docs URL (well-known skills discovery)
+```bash
+npx playbooks add skill https://mintlify.com/docs
+npx playbooks add skill mintlify.com/docs
+```
+
 - Marketplace.json (path)
 ```bash
 npx playbooks add skill ./path/to/.claude-plugin/marketplace.json
@@ -108,6 +114,36 @@ npx playbooks add skill https://raw.githubusercontent.com/org/repo/main/.claude-
 ```bash
 npx playbooks add skill org/repo/.claude-plugin/marketplace.json
 ```
+
+### Well-known skills discovery (RFC 8615)
+
+If a docs site publishes a skills index at a predictable path, playbooks can discover and install skills from the site URL directly. The CLI looks for:
+
+```text
+https://example.com/docs/.well-known/skills/index.json
+```
+
+The index lists one or more skills and the files for each skill:
+
+```json
+{
+  "skills": [
+    {
+      "name": "mintlify",
+      "description": "Build and maintain documentation sites with Mintlify.",
+      "files": ["SKILL.md"]
+    }
+  ]
+}
+```
+
+When you run `npx playbooks add skill <docs-url>`, playbooks fetches the index and then downloads each skill from:
+
+```text
+https://example.com/docs/.well-known/skills/<skill-name>/SKILL.md
+```
+
+Multiple skills can be listed in the same index and will be shown in the selection screen.
 
 ### Options (add skill)
 
@@ -167,7 +203,7 @@ npx playbooks manage skill
 
 ## Marketplace.json support
 
-Playbooks can ingest a Claude-style `marketplace.json` and pull skills from the plugins it lists.
+playbooks can ingest a Claude-style `marketplace.json` and pull skills from the plugins it lists.
 
 What it scans:
 - The plugin root (if it contains `SKILL.md`)

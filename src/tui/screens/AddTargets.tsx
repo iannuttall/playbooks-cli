@@ -4,14 +4,17 @@ import { agents, detectInstalledAgents } from '../../agents.js';
 import type { AgentType } from '../../types.js';
 import { useNavigation } from '../context/navigation.js';
 import { MultiSelect } from '../controls/MultiSelect.js';
+import { SingleSelect } from '../controls/SingleSelect.js';
 import { AddFlowHeader } from '../ui/AddFlowHeader.js';
 import { useSpinnerFrame } from '../ui/spinner.js';
 
 type Status = 'loading' | 'ready';
+type Mode = 'choice' | 'select';
 
 export function AddTargetsScreen() {
   const { invocation, addSkill, updateAddSkill, navigateTo, setFlash, navAction } = useNavigation();
   const [status, setStatus] = React.useState<Status>('loading');
+  const [mode, setMode] = React.useState<Mode>('choice');
   const [availableAgents, setAvailableAgents] = React.useState<AgentType[]>([]);
   const [showLoading, setShowLoading] = React.useState(false);
   const spinner = useSpinnerFrame(status === 'loading');
@@ -25,6 +28,7 @@ export function AddTargetsScreen() {
       const list = installed.length > 0 ? installed : (Object.keys(agents) as AgentType[]);
       setAvailableAgents(list);
       setStatus('ready');
+      setMode('choice');
 
       if (navAction !== 'pop' && addSkill.targetAgents && addSkill.targetAgents.length > 0) {
         navigateTo('add-scope');
@@ -94,24 +98,61 @@ export function AddTargetsScreen() {
 
   return (
     <Box flexDirection="column" padding={1}>
-      <AddFlowHeader title="Select agents" />
-      <MultiSelect
-        items={items}
-        initialSelected={addSkill.targetAgents ?? availableAgents}
-        onSubmit={(values) => {
-          if (values.length === 0) {
-            setFlash('Select at least one agent.');
-            return;
-          }
-          updateAddSkill({
-            targetAgents: values,
-            installGlobally: undefined,
-            installMode: undefined,
-            planLines: undefined,
-          });
-          navigateTo('add-scope');
-        }}
-      />
+      {mode === 'choice' ? (
+        <>
+          <AddFlowHeader title="Install to" />
+          <SingleSelect
+            items={[
+              {
+                label: 'All detected agents (Recommended)',
+                value: 'all',
+                hint: `Install to all ${availableAgents.length} detected agents`,
+              },
+              {
+                label: 'Select specific agents',
+                value: 'select',
+                hint: 'Choose a subset of detected agents',
+              },
+            ]}
+            initialValue="all"
+            onSubmit={(value) => {
+              if (value === 'all') {
+                updateAddSkill({
+                  targetAgents: availableAgents,
+                  installGlobally: undefined,
+                  installMode: undefined,
+                  planLines: undefined,
+                });
+                navigateTo('add-scope');
+                return;
+              }
+
+              setMode('select');
+            }}
+          />
+        </>
+      ) : (
+        <>
+          <AddFlowHeader title="Select agents" />
+          <MultiSelect
+            items={items}
+            initialSelected={addSkill.targetAgents ?? availableAgents}
+            onSubmit={(values) => {
+              if (values.length === 0) {
+                setFlash('Select at least one agent.');
+                return;
+              }
+              updateAddSkill({
+                targetAgents: values,
+                installGlobally: undefined,
+                installMode: undefined,
+                planLines: undefined,
+              });
+              navigateTo('add-scope');
+            }}
+          />
+        </>
+      )}
     </Box>
   );
 }

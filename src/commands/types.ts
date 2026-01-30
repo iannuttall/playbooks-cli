@@ -17,7 +17,8 @@ export type SkillSourceType =
   | 'url'
   | 'mintlify'
   | 'huggingface'
-  | 'raw';
+  | 'raw'
+  | 'well-known';
 
 export interface MarketplaceSkillOrigin {
   sourceType: SkillSourceType;

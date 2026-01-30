@@ -17,7 +17,7 @@ const version = packageJson.version;
 setVersion(version);
 setupTempDirCleanup();
 
-program.name('playbooks').description('Playbooks CLI').version(version);
+program.name('playbooks').description('playbooks CLI').version(version);
 program.addHelpCommand();
 
 const applyAddSkillOptions = (cmd: Command) =>

@@ -1,10 +1,11 @@
 import { existsSync } from 'node:fs';
 import { mkdir, mkdtemp, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { basename, join } from 'node:path';
+import { join } from 'node:path';
 import { Box, Text } from 'ink';
 import React from 'react';
 import { resolveRemoteSkill } from '../../flows/remote-skill.js';
+import { prepareWellKnownSkills } from '../../flows/well-known-skills.js';
 import { cleanupTempDir, cloneRepo } from '../../git.js';
 import { isMarketplaceSource, loadMarketplace, normalizePlugins } from '../../marketplace.js';
 import { discoverSkills, getSkillDisplayName } from '../../skills.js';
@@ -16,6 +17,7 @@ import { MultiSelect } from '../controls/MultiSelect.js';
 import { AddFlowHeader } from '../ui/AddFlowHeader.js';
 import { BACK_QUIT_HINT } from '../ui/hints.js';
 import { useSpinnerFrame } from '../ui/spinner.js';
+import { autoSelect } from '../utils/skill-selection.js';
 
 type Status = 'loading' | 'ready' | 'error' | 'list';
 
@@ -117,6 +119,45 @@ export function AddSkillSelectScreen() {
 
           keepTempDir = true;
           navigateTo('add-targets');
+          return;
+        }
+
+        if (parsed.type === 'well-known') {
+          const prepared = await prepareWellKnownSkills(parsed.url);
+          tempDirForCleanup = prepared.tempDir;
+
+          updateAddSkill({
+            parsed,
+            tempDir: prepared.tempDir,
+            skills: prepared.skills,
+            originBySkillName: prepared.originBySkillName,
+          });
+
+          if (options.list) {
+            keepTempDir = true;
+            setListMode(true);
+            setStatus('list');
+            return;
+          }
+
+          const autoSelection = autoSelect(prepared.skills, options);
+          if (autoSelection.status === 'selected') {
+            keepTempDir = true;
+            updateAddSkill({ selectedSkills: autoSelection.skills });
+            navigateTo('add-targets');
+            return;
+          }
+
+          if (autoSelection.status === 'error') {
+            throw new Error(autoSelection.message);
+          }
+
+          if (autoSelection.status === 'prompt' && autoSelection.message) {
+            setFlash(autoSelection.message);
+          }
+
+          keepTempDir = true;
+          setStatus('ready');
           return;
         }
 
@@ -329,40 +370,4 @@ export function AddSkillSelectScreen() {
       />
     </Box>
   );
-}
-
-function matchesSkillName(skill: Skill, input: string): boolean {
-  const normalized = input.toLowerCase();
-  const byName = skill.name.toLowerCase() === normalized;
-  const byPath = basename(skill.path).toLowerCase() === normalized;
-  return byName || byPath;
-}
-
-function autoSelect(
-  skills: Skill[],
-  options: { skill?: string[]; yes?: boolean }
-):
-  | { status: 'selected'; skills: Skill[] }
-  | { status: 'prompt'; message?: string }
-  | { status: 'error'; message: string } {
-  if (options.skill && options.skill.length > 0) {
-    const selected = skills.filter((s) => options.skill?.some((name) => matchesSkillName(s, name)));
-    if (selected.length === 0) {
-      return {
-        status: 'prompt',
-        message: `No matching skills found for: ${options.skill.join(', ')}`,
-      } as const;
-    }
-    return { status: 'selected', skills: selected } as const;
-  }
-
-  if (skills.length === 1) {
-    return { status: 'selected', skills } as const;
-  }
-
-  if (options.yes) {
-    return { status: 'selected', skills } as const;
-  }
-
-  return { status: 'prompt' } as const;
 }

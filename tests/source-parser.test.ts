@@ -148,6 +148,41 @@ test('Git URL - custom host', () => {
   assert.strictEqual(result.url, 'https://git.example.com/owner/repo.git');
 });
 
+// Well-known URL tests
+test('Well-known URL - basic', () => {
+  const result = parseSource('https://mintlify.com/docs');
+  assert.strictEqual(result.type, 'well-known');
+  assert.strictEqual(result.url, 'https://mintlify.com/docs');
+});
+
+test('Well-known URL - scheme-less domain', () => {
+  const result = parseSource('mintlify.com/docs');
+  assert.strictEqual(result.type, 'well-known');
+  assert.strictEqual(result.url, 'https://mintlify.com/docs');
+});
+
+test('Direct URL - scheme-less skill.md', () => {
+  const result = parseSource('docs.example.com/skill.md');
+  assert.strictEqual(result.type, 'direct-url');
+  assert.strictEqual(result.url, 'https://docs.example.com/skill.md');
+});
+
+test('Well-known URL - root domain', () => {
+  const result = parseSource('https://example.com');
+  assert.strictEqual(result.type, 'well-known');
+  assert.strictEqual(result.url, 'https://example.com');
+});
+
+test('Well-known URL - direct skill.md stays direct-url', () => {
+  const result = parseSource('https://docs.example.com/skill.md');
+  assert.strictEqual(result.type, 'direct-url');
+});
+
+test('Well-known URL - .git stays git', () => {
+  const result = parseSource('https://git.example.com/owner/repo.git');
+  assert.strictEqual(result.type, 'git');
+});
+
 // getOwnerRepo tests - for telemetry normalization
 test('getOwnerRepo - GitHub URL', () => {
   const parsed = parseSource('https://github.com/owner/repo');

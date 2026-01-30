@@ -4,6 +4,7 @@ import { dirname, join } from 'node:path';
 import { cleanupTempDir, cloneRepo } from '../git.js';
 import { type SkillScope, findSkillInstallations } from '../installed-skills.js';
 import { copySkillDirectory, getCanonicalPath } from '../installer.js';
+import { isPathSafe } from '../installer/paths.js';
 import { fetchMintlifySkill } from '../mintlify.js';
 import { findProvider } from '../providers/index.js';
 import { type SkillLockEntry, addSkillToLock, getAllLockedSkills } from '../skill-lock.js';
@@ -169,11 +170,16 @@ async function updateFromRepo(target: UpdateTarget): Promise<boolean> {
 async function updateFromRemote(target: UpdateTarget): Promise<boolean> {
   const provider = findProvider(target.entry.sourceUrl);
   let content: string | null = null;
+  let files: Map<string, string> | null = null;
 
   if (provider) {
     const skill = await provider.fetchSkill(target.entry.sourceUrl);
     if (skill) {
-      content = skill.content;
+      if ('files' in skill && skill.files instanceof Map) {
+        files = skill.files;
+      } else {
+        content = skill.content;
+      }
     }
   } else if (target.entry.sourceType === 'mintlify') {
     const legacy = await fetchMintlifySkill(target.entry.sourceUrl);
@@ -182,7 +188,7 @@ async function updateFromRemote(target: UpdateTarget): Promise<boolean> {
     }
   }
 
-  if (!content) {
+  if (!content && !files) {
     return false;
   }
 
@@ -190,7 +196,18 @@ async function updateFromRemote(target: UpdateTarget): Promise<boolean> {
   registerTempDir(tempDir);
   try {
     await mkdir(tempDir, { recursive: true });
-    await writeFile(join(tempDir, 'SKILL.md'), content, 'utf-8');
+    if (files) {
+      for (const [filePath, fileContent] of files.entries()) {
+        const targetPath = join(tempDir, filePath);
+        if (!isPathSafe(tempDir, targetPath)) {
+          continue;
+        }
+        await mkdir(dirname(targetPath), { recursive: true });
+        await writeFile(targetPath, fileContent, 'utf-8');
+      }
+    } else if (content) {
+      await writeFile(join(tempDir, 'SKILL.md'), content, 'utf-8');
+    }
     return await applyUpdateFromDir(target.name, target.scope, tempDir);
   } finally {
     await cleanupTempDir(tempDir);
