@@ -45,6 +45,20 @@ Playbooks uses an action/type command structure:
 - `npx playbooks list skill`
 - `npx playbooks manage skill`
 - `npx playbooks update skill [skill-names...]`
+- `npx playbooks get <url> [out <path>]`
+
+### Fetch a URL as markdown
+
+```bash
+# Output markdown to stdout
+npx playbooks get https://example.com
+
+# Save markdown to a file
+npx playbooks get https://example.com out notes.md
+
+# Output JSON metadata instead of raw markdown
+npx playbooks get https://example.com --json
+```
 
 ### Source formats
 

@@ -1,8 +1,10 @@
 #!/usr/bin/env node
 
 import 'dotenv/config';
+import { writeFileSync } from 'node:fs';
 import { type Command, program } from 'commander';
 import packageJson from '../package.json' with { type: 'json' };
+import { consumeUrlMarkdownOutput } from './flows/url-markdown-output.js';
 import { setVersion } from './telemetry.js';
 import { setupTempDirCleanup } from './temp-registry.js';
 import { runApp } from './tui/App.js';
@@ -149,6 +151,62 @@ findCmd
   .action(async () => {
     await launch({ intent: 'find-skill', options: {} }, 'find-skill-search');
   });
+
+program
+  .command('get <url> [outKeyword] [outPath]')
+  .description('Fetch a URL as markdown')
+  .option('--json', 'Output JSON metadata instead of raw markdown')
+  .action(
+    async (
+      url: string,
+      outKeyword: string | undefined,
+      outPath: string | undefined,
+      options: { json?: boolean }
+    ) => {
+      let outputPath: string | undefined = undefined;
+      if (outKeyword || outPath) {
+        if (outKeyword !== 'out' || !outPath) {
+          console.error('Usage: playbooks get <url> [out <path>]');
+          process.exit(1);
+        }
+        outputPath = outPath;
+      }
+
+      await runApp(
+        { intent: 'get-url', source: url, options: { json: options.json, output: outputPath } },
+        'get-url'
+      );
+
+      const output = consumeUrlMarkdownOutput();
+      if (!output) {
+        return;
+      }
+      if (output.status === 'error') {
+        console.error(`Failed to fetch markdown: ${output.message}`);
+        process.exit(1);
+      }
+      if (outputPath) {
+        if (options.json) {
+          writeFileSync(outputPath, `${JSON.stringify(output.data, null, 2)}\n`, 'utf8');
+          return;
+        }
+        const body = output.data.markdown.endsWith('\n')
+          ? output.data.markdown
+          : `${output.data.markdown}\n`;
+        writeFileSync(outputPath, body, 'utf8');
+        return;
+      }
+
+      if (options.json) {
+        console.log(JSON.stringify(output.data, null, 2));
+        return;
+      }
+      const body = output.data.markdown.endsWith('\n')
+        ? output.data.markdown
+        : `${output.data.markdown}\n`;
+      process.stdout.write(body);
+    }
+  );
 
 program.action(async () => {
   await launch({ intent: 'none', options: {} }, 'main');

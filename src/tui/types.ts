@@ -12,6 +12,7 @@ export type Screen =
   | 'add-source'
   | 'add-marketplace-plugins'
   | 'add-marketplace-skills'
+  | 'get-url'
   | 'find-skill-search'
   | 'find-skill-results'
   | 'add-skill-select'
@@ -30,6 +31,7 @@ export type CliIntent =
   | 'add-skill'
   | 'skill'
   | 'find-skill'
+  | 'get-url'
   | 'list'
   | 'manage'
   | 'update';
@@ -37,7 +39,7 @@ export type CliIntent =
 export type CliInvocation = {
   intent: CliIntent;
   source?: string;
-  options: AddSkillOptions & { project?: boolean };
+  options: AddSkillOptions & { project?: boolean; json?: boolean; output?: string };
   updateSkillNames?: string[];
 };
 

@@ -14,6 +14,7 @@ import { AddSourceScreen } from './screens/AddSource.js';
 import { AddTargetsScreen } from './screens/AddTargets.js';
 import { FindSkillResultsScreen } from './screens/FindSkillResults.js';
 import { FindSkillSearchScreen } from './screens/FindSkillSearch.js';
+import { GetUrlScreen } from './screens/GetUrl.js';
 import { ListScreen } from './screens/ListSkills.js';
 import { MainMenu } from './screens/MainMenu.js';
 import { ManageScreen } from './screens/ManageSkills.js';
@@ -38,6 +39,8 @@ export function ScreenRouter() {
         return <FindSkillSearchScreen />;
       case 'find-skill-results':
         return <FindSkillResultsScreen />;
+      case 'get-url':
+        return <GetUrlScreen />;
       case 'add-skill-select':
         return <AddSkillSelectScreen />;
       case 'add-targets':
