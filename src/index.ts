@@ -4,6 +4,8 @@ import 'dotenv/config';
 import { writeFileSync } from 'node:fs';
 import { type Command, program } from 'commander';
 import packageJson from '../package.json' with { type: 'json' };
+import { agents } from './agents.js';
+import { type SearchOutcome, searchSkillDirectory } from './flows/find-skill.js';
 import { consumeUrlMarkdownOutput } from './flows/url-markdown-output.js';
 import { setVersion } from './telemetry.js';
 import { setupTempDirCleanup } from './temp-registry.js';
@@ -15,6 +17,7 @@ setVersion(version);
 setupTempDirCleanup();
 
 program.name('playbooks').description('Playbooks CLI').version(version);
+program.addHelpCommand();
 
 const applyAddSkillOptions = (cmd: Command) =>
   cmd
@@ -49,6 +52,55 @@ function initialAddSkillScreen(source?: string): Screen {
   return source ? 'add-skill-select' : 'add-source';
 }
 
+function formatAgentListMarkdown(): string {
+  const entries = Object.values(agents)
+    .map((agent) => ({ name: agent.name, displayName: agent.displayName }))
+    .sort((a, b) => a.displayName.localeCompare(b.displayName));
+  const lines: string[] = ['# Supported agents', ''];
+  for (const entry of entries) {
+    lines.push(`- ${entry.displayName} (\`${entry.name}\`)`);
+  }
+  return lines.join('\n');
+}
+
+function formatFindSkillMarkdown(query: string, outcome: SearchOutcome): string {
+  const lines: string[] = [`# Skill search results for "${query}"`];
+  lines.push('Ordered by best match; official sources recommended.');
+  if (outcome.fallback) {
+    lines.push('_Note: semantic search unavailable. Showing fast results._');
+  }
+
+  if (outcome.results.length === 0) {
+    lines.push('', '_No results._');
+    return lines.join('\n');
+  }
+
+  lines.push('');
+
+  for (const result of outcome.results.slice(0, 10)) {
+    const description = result.shortDescription ?? result.description ?? '';
+    const repo =
+      result.repoOwner && result.repoName ? `${result.repoOwner}/${result.repoName}` : null;
+    const skillName = result.skillSlug ?? result.name;
+    if (!repo || !skillName) {
+      continue;
+    }
+    const tag = result.isOfficial ? '[official]' : '[community]';
+    lines.push(`- ${tag} npx playbooks add skill ${repo} --skill ${skillName}`);
+    if (description) {
+      lines.push(`  ${truncateLine(description, 140)}`);
+    }
+  }
+
+  return lines.join('\n');
+}
+
+function truncateLine(value: string, maxLength: number): string {
+  if (value.length <= maxLength) return value;
+  const sliced = value.slice(0, Math.max(0, maxLength - 1)).trimEnd();
+  return sliced ? `${sliced}…` : value.slice(0, maxLength);
+}
+
 applyAddSkillOptions(
   program
     .command('add-skill [source]', { hidden: true })
@@ -76,6 +128,13 @@ listCmd
   .description('List installed skills')
   .action(async () => {
     await launch({ intent: 'list', options: {} }, 'list');
+  });
+
+listCmd
+  .command('agents')
+  .description('List supported agents')
+  .action(() => {
+    console.log(formatAgentListMarkdown());
   });
 
 const manageCmd = program.command('manage').description('Remove installed resources');
@@ -146,10 +205,24 @@ skillCmd.action(async (source: string | undefined, options) => {
 const findCmd = program.command('find').description('Search the playbooks directory');
 
 findCmd
-  .command('skill')
+  .command('skill [query]')
   .description('Find skills')
-  .action(async () => {
-    await launch({ intent: 'find-skill', options: {} }, 'find-skill-search');
+  .option('--semantic', 'Use semantic search (falls back to fast search)')
+  .action(async (query: string | undefined, options: { semantic?: boolean }) => {
+    if (!query) {
+      await launch({ intent: 'find-skill', options: {} }, 'find-skill-search');
+      return;
+    }
+
+    const mode = options.semantic ? 'semantic' : 'lexical';
+    try {
+      const outcome = await searchSkillDirectory(query, mode, 10);
+      console.log(formatFindSkillMarkdown(query, outcome));
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Search failed.';
+      console.error(message);
+      process.exit(1);
+    }
   });
 
 program
