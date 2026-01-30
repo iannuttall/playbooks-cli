@@ -4,7 +4,7 @@
   "description": "Install agent skills, MCPs and docs into your coding agents from any git repository.",
   "type": "module",
   "bin": {
-    "playbooks": "./dist/index.js"
+    "playbooks": "dist/index.js"
   },
   "files": [
     "dist",
