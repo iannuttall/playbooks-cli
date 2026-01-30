@@ -20,12 +20,12 @@ export function AddSourceScreen() {
   });
 
   React.useEffect(() => {
-    const preset = addSkill.source ?? invocation.source;
+    const preset = invocation.source;
     if (!preset || didAutofillRef.current) return;
     didAutofillRef.current = true;
     updateAddSkill({ source: preset });
     navigateTo('add-skill-select');
-  }, [addSkill.source, invocation.source, updateAddSkill, navigateTo]);
+  }, [invocation.source, updateAddSkill, navigateTo]);
 
   const onSubmit = (input: string) => {
     const trimmed = input.trim();
