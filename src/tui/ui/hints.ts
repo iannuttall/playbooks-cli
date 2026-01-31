@@ -6,7 +6,7 @@ export const MULTI_SELECT_HINT =
   'Space to toggle, s to select all, Enter to continue, m for main, q/esc to quit';
 export const BACK_QUIT_HINT = 'Press ← to go back, q/esc to quit';
 export const FIND_SKILLS_HINT = 'Space to select one or more skills, then Enter to install.';
-export const FIND_SEARCH_HINT = 'Enter for fast search, Tab for semantic search.';
+export const FIND_SEARCH_HINT = 'Enter for fast results, Tab for AI search.';
 export const FIND_RESULTS_HINT =
   'Space to toggle, s to select all, i for info, Enter to install, q/esc to quit';
 export const UPDATE_HINT_NEEDS_ONLY =

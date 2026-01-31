@@ -1,9 +1,12 @@
 export type AgentType =
+  | 'adal'
   | 'amp'
   | 'antigravity'
+  | 'augment'
   | 'claude-code'
   | 'clawdbot'
   | 'cline'
+  | 'codebuddy'
   | 'codex'
   | 'command-code'
   | 'continue'
@@ -13,17 +16,28 @@ export type AgentType =
   | 'gemini-cli'
   | 'github-copilot'
   | 'goose'
+  | 'iflow-cli'
+  | 'junie'
   | 'kilo'
+  | 'kimi-cli'
   | 'kiro-cli'
+  | 'kode'
   | 'mcpjam'
+  | 'mistral-vibe'
+  | 'mux'
   | 'neovate'
+  | 'openclaude'
+  | 'openclaw'
   | 'opencode'
   | 'openhands'
   | 'pi'
+  | 'pochi'
   | 'qoder'
   | 'qwen-code'
+  | 'replit'
   | 'roo'
   | 'trae'
+  | 'trae-cn'
   | 'windsurf'
   | 'zencoder';
 
@@ -33,14 +47,15 @@ export interface Skill {
   path: string;
   /** Raw SKILL.md content for hashing */
   rawContent?: string;
-  metadata?: Record<string, string>;
+  /** Additional metadata from frontmatter (e.g., internal: true) */
+  metadata?: Record<string, unknown>;
 }
 
 export interface AgentConfig {
   name: string;
   displayName: string;
   skillsDir: string;
-  globalSkillsDir: string;
+  globalSkillsDir: string | undefined;
   detectInstalled: () => Promise<boolean>;
 }
 

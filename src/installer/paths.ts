@@ -68,7 +68,15 @@ export function getInstallPath(
   const cwd = options.cwd || process.cwd();
   const sanitized = sanitizeSkillName(skillName);
 
-  const targetBase = options.global ? agent.globalSkillsDir : join(cwd, agent.skillsDir);
+  let targetBase: string;
+  if (options.global) {
+    if (!agent.globalSkillsDir) {
+      throw new Error(`Agent ${agent.displayName} does not support global installation`);
+    }
+    targetBase = agent.globalSkillsDir;
+  } else {
+    targetBase = join(cwd, agent.skillsDir);
+  }
   const installPath = join(targetBase, sanitized);
 
   if (!isPathSafe(targetBase, installPath)) {
@@ -91,7 +99,15 @@ export function getInstallTargets(
   const canonicalBase = getCanonicalSkillsDir(isGlobal, cwd);
   const canonicalDir = join(canonicalBase, skillName);
 
-  const agentBase = isGlobal ? agent.globalSkillsDir : join(cwd, agent.skillsDir);
+  let agentBase: string;
+  if (isGlobal) {
+    if (!agent.globalSkillsDir) {
+      throw new Error(`Agent ${agent.displayName} does not support global installation`);
+    }
+    agentBase = agent.globalSkillsDir;
+  } else {
+    agentBase = join(cwd, agent.skillsDir);
+  }
   const agentDir = join(agentBase, skillName);
 
   return {

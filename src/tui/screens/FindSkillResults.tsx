@@ -133,6 +133,7 @@ export function FindSkillResultsScreen() {
         onSubmit={handleSubmit}
         limit={10}
         hint={FIND_RESULTS_HINT}
+        enableFilter={false}
       />
     </Box>
   );

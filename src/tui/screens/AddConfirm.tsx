@@ -65,13 +65,15 @@ export function AddConfirmScreen() {
   }, [lines]);
   const agentPaths =
     targetAgents.length > 0
-      ? targetAgents.map((agent) => {
-          const config = agents[agent];
-          const base = addSkill.installGlobally
-            ? config.globalSkillsDir
-            : join(cwd, config.skillsDir);
-          return shortenPath(base, cwd);
-        })
+      ? targetAgents
+          .map((agent) => {
+            const config = agents[agent];
+            const base = addSkill.installGlobally
+              ? config.globalSkillsDir
+              : join(cwd, config.skillsDir);
+            return base ? shortenPath(base, cwd) : null;
+          })
+          .filter((p): p is string => p !== null)
       : [];
 
   return (

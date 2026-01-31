@@ -1,6 +1,7 @@
 import { Box, Text } from 'ink';
 import React from 'react';
 import { agents, detectInstalledAgents } from '../../agents.js';
+import { getLastSelectedAgents, saveSelectedAgents } from '../../skill-lock.js';
 import type { AgentType } from '../../types.js';
 import { useNavigation } from '../context/navigation.js';
 import { MultiSelect } from '../controls/MultiSelect.js';
@@ -16,6 +17,7 @@ export function AddTargetsScreen() {
   const [status, setStatus] = React.useState<Status>('loading');
   const [mode, setMode] = React.useState<Mode>('choice');
   const [availableAgents, setAvailableAgents] = React.useState<AgentType[]>([]);
+  const [lastSelected, setLastSelected] = React.useState<AgentType[]>([]);
   const [showLoading, setShowLoading] = React.useState(false);
   const spinner = useSpinnerFrame(status === 'loading');
 
@@ -23,10 +25,20 @@ export function AddTargetsScreen() {
     let cancelled = false;
     const run = async () => {
       setStatus('loading');
-      const installed = await detectInstalledAgents();
+      const [installed, lastAgents] = await Promise.all([
+        detectInstalledAgents(),
+        getLastSelectedAgents({ global: true }).catch(() => undefined),
+      ]);
       if (cancelled) return;
       const list = installed.length > 0 ? installed : (Object.keys(agents) as AgentType[]);
       setAvailableAgents(list);
+
+      // Filter last selected to only include currently available agents
+      if (lastAgents && lastAgents.length > 0) {
+        const validLast = lastAgents.filter((a) => list.includes(a as AgentType)) as AgentType[];
+        setLastSelected(validLast);
+      }
+
       setStatus('ready');
       setMode('choice');
 
@@ -115,8 +127,10 @@ export function AddTargetsScreen() {
               },
             ]}
             initialValue="all"
-            onSubmit={(value) => {
+            onSubmit={async (value) => {
               if (value === 'all') {
+                // Save selection for next time
+                saveSelectedAgents(availableAgents, { global: true }).catch(() => {});
                 updateAddSkill({
                   targetAgents: availableAgents,
                   installGlobally: undefined,
@@ -136,12 +150,17 @@ export function AddTargetsScreen() {
           <AddFlowHeader title="Select agents" />
           <MultiSelect
             items={items}
-            initialSelected={addSkill.targetAgents ?? availableAgents}
+            initialSelected={
+              addSkill.targetAgents ?? (lastSelected.length > 0 ? lastSelected : availableAgents)
+            }
+            enableFilter={true}
             onSubmit={(values) => {
               if (values.length === 0) {
                 setFlash('Select at least one agent.');
                 return;
               }
+              // Save selection for next time
+              saveSelectedAgents(values, { global: true }).catch(() => {});
               updateAddSkill({
                 targetAgents: values,
                 installGlobally: undefined,

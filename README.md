@@ -247,11 +247,14 @@ Skills can be installed to any of these supported agents. Use `-g, --global` to 
 <!-- available-agents:start -->
 | Agent | `--agent` | Project Path | Global Path |
 |-------|-----------|--------------|-------------|
+| AdaL | `adal` | `.adal/skills/` | `~/.adal/skills/` |
 | Amp | `amp` | `.agents/skills/` | `~/.config/agents/skills/` |
 | Antigravity | `antigravity` | `.agent/skills/` | `~/.gemini/antigravity/global_skills/` |
+| Augment | `augment` | `.augment/rules/` | `~/.augment/rules/` |
 | Claude Code | `claude-code` | `.claude/skills/` | `~/.claude/skills/` |
 | Clawdbot | `clawdbot` | `skills/` | `~/.clawdbot/skills/` |
 | Cline | `cline` | `.cline/skills/` | `~/.cline/skills/` |
+| CodeBuddy | `codebuddy` | `.codebuddy/skills/` | `~/.codebuddy/skills/` |
 | Codex | `codex` | `.codex/skills/` | `~/.codex/skills/` |
 | Command Code | `command-code` | `.commandcode/skills/` | `~/.commandcode/skills/` |
 | Continue | `continue` | `.continue/skills/` | `~/.continue/skills/` |
@@ -261,19 +264,30 @@ Skills can be installed to any of these supported agents. Use `-g, --global` to 
 | Gemini CLI | `gemini-cli` | `.gemini/skills/` | `~/.gemini/skills/` |
 | GitHub Copilot | `github-copilot` | `.github/skills/` | `~/.copilot/skills/` |
 | Goose | `goose` | `.goose/skills/` | `~/.config/goose/skills/` |
+| iFlow CLI | `iflow-cli` | `.iflow/skills/` | `~/.iflow/skills/` |
+| Junie | `junie` | `.junie/skills/` | `~/.junie/skills/` |
 | Kilo Code | `kilo` | `.kilocode/skills/` | `~/.kilocode/skills/` |
+| Kimi Code CLI | `kimi-cli` | `.agents/skills/` | `~/.config/agents/skills/` |
 | Kiro CLI | `kiro-cli` | `.kiro/skills/` | `~/.kiro/skills/` |
+| Kode | `kode` | `.kode/skills/` | `~/.kode/skills/` |
 | MCPJam | `mcpjam` | `.mcpjam/skills/` | `~/.mcpjam/skills/` |
+| Mistral Vibe | `mistral-vibe` | `.vibe/skills/` | `~/.vibe/skills/` |
+| Mux | `mux` | `.mux/skills/` | `~/.mux/skills/` |
+| Neovate | `neovate` | `.neovate/skills/` | `~/.neovate/skills/` |
+| OpenClaude IDE | `openclaude` | `.openclaude/skills/` | `~/.openclaude/skills/` |
+| OpenClaw | `openclaw` | `skills/` | `~/.openclaw/skills/` |
 | OpenCode | `opencode` | `.opencode/skills/` | `~/.config/opencode/skills/` |
 | OpenHands | `openhands` | `.openhands/skills/` | `~/.openhands/skills/` |
 | Pi | `pi` | `.pi/skills/` | `~/.pi/agent/skills/` |
+| Pochi | `pochi` | `.pochi/skills/` | `~/.pochi/skills/` |
 | Qoder | `qoder` | `.qoder/skills/` | `~/.qoder/skills/` |
 | Qwen Code | `qwen-code` | `.qwen/skills/` | `~/.qwen/skills/` |
+| Replit | `replit` | `.agent/skills/` | *(project only)* |
 | Roo Code | `roo` | `.roo/skills/` | `~/.roo/skills/` |
 | Trae | `trae` | `.trae/skills/` | `~/.trae/skills/` |
+| Trae CN | `trae-cn` | `.trae/skills/` | `~/.trae-cn/skills/` |
 | Windsurf | `windsurf` | `.windsurf/skills/` | `~/.codeium/windsurf/skills/` |
 | Zencoder | `zencoder` | `.zencoder/skills/` | `~/.zencoder/skills/` |
-| Neovate | `neovate` | `.neovate/skills/` | `~/.neovate/skills/` |
 <!-- available-agents:end -->
 
 > [!NOTE]
@@ -328,11 +342,13 @@ The CLI searches for skills in these locations within a repository:
 - `skills/.curated/`
 - `skills/.experimental/`
 - `skills/.system/`
-- `.agents/skills/`
+- `.adal/skills/`
 - `.agent/skills/`
+- `.agents/skills/`
+- `.augment/rules/`
 - `.claude/skills/`
-- `./skills/`
 - `.cline/skills/`
+- `.codebuddy/skills/`
 - `.codex/skills/`
 - `.commandcode/skills/`
 - `.continue/skills/`
@@ -342,19 +358,26 @@ The CLI searches for skills in these locations within a repository:
 - `.gemini/skills/`
 - `.github/skills/`
 - `.goose/skills/`
+- `.iflow/skills/`
+- `.junie/skills/`
 - `.kilocode/skills/`
 - `.kiro/skills/`
+- `.kode/skills/`
 - `.mcpjam/skills/`
+- `.mux/skills/`
+- `.neovate/skills/`
+- `.openclaude/skills/`
 - `.opencode/skills/`
 - `.openhands/skills/`
 - `.pi/skills/`
+- `.pochi/skills/`
 - `.qoder/skills/`
 - `.qwen/skills/`
 - `.roo/skills/`
 - `.trae/skills/`
+- `.vibe/skills/`
 - `.windsurf/skills/`
 - `.zencoder/skills/`
-- `.neovate/skills/`
 <!-- skill-discovery:end -->
 
 If no skills are found in standard locations, a recursive search is performed.
@@ -378,12 +401,51 @@ npm approve-builds
 
 Skills are generally compatible across agents since they follow a shared [Agent Skills specification](https://agentskills.io). However, some features may be agent-specific:
 
-| Feature         | OpenCode | OpenHands | Claude Code | Cline | Codex | Command Code | Kiro CLI | Cursor | Antigravity | Roo Code | Github Copilot | Amp | Clawdbot | Neovate | Pi  | Qoder | Zencoder |
-| --------------- | -------- | --------- | ----------- | ----- | ----- | ------------ | -------- | ------ | ----------- | -------- | -------------- | --- | -------- | ------- | --- | ----- | -------- |
-| Basic skills    | Yes      | Yes       | Yes         | Yes   | Yes   | Yes          | Yes      | Yes    | Yes         | Yes      | Yes            | Yes | Yes      | Yes     | Yes | Yes   | Yes      |
-| `allowed-tools` | Yes      | Yes       | Yes         | Yes   | Yes   | Yes          | No       | Yes    | Yes         | Yes      | Yes            | Yes | Yes      | Yes     | Yes | Yes   | No       |
-| `context: fork` | No       | No        | Yes         | No    | No    | No           | No       | No     | No          | No       | No             | No  | No       | No      | No  | No    | No       |
-| Hooks           | No       | No        | Yes         | Yes   | No    | No           | No       | No     | No          | No       | No             | No  | No       | No      | No  | No    | No       |
+<!-- compatibility-table:start -->
+| Agent | Basic Skills | `allowed-tools` | `context: fork` | Hooks |
+|-------|:------------:|:---------------:|:---------------:|:-----:|
+| AdaL | ✓ | ✓ | | |
+| Amp | ✓ | ✓ | | |
+| Antigravity | ✓ | ✓ | | |
+| Augment | ✓ | ✓ | | |
+| Claude Code | ✓ | ✓ | ✓ | ✓ |
+| Clawdbot | ✓ | ✓ | | |
+| Cline | ✓ | ✓ | | ✓ |
+| CodeBuddy | ✓ | ✓ | | |
+| Codex | ✓ | ✓ | | |
+| Command Code | ✓ | ✓ | | |
+| Continue | ✓ | ✓ | | |
+| Crush | ✓ | ✓ | | |
+| Cursor | ✓ | ✓ | | |
+| Droid | ✓ | ✓ | | ✓ |
+| Gemini CLI | ✓ | ✓ | | |
+| GitHub Copilot | ✓ | ✓ | | |
+| Goose | ✓ | ✓ | | |
+| iFlow CLI | ✓ | ✓ | | |
+| Junie | ✓ | ✓ | | |
+| Kilo Code | ✓ | ✓ | | |
+| Kimi Code CLI | ✓ | ✓ | | |
+| Kiro CLI | ✓ | | | |
+| Kode | ✓ | ✓ | | |
+| MCPJam | ✓ | ✓ | | |
+| Mistral Vibe | ✓ | ✓ | | |
+| Mux | ✓ | ✓ | | |
+| Neovate | ✓ | ✓ | | |
+| OpenClaude IDE | ✓ | ✓ | | |
+| OpenClaw | ✓ | ✓ | | |
+| OpenCode | ✓ | ✓ | | |
+| OpenHands | ✓ | ✓ | | |
+| Pi | ✓ | ✓ | | |
+| Pochi | ✓ | ✓ | | |
+| Qoder | ✓ | ✓ | | |
+| Qwen Code | ✓ | ✓ | | |
+| Replit | ✓ | ✓ | | |
+| Roo Code | ✓ | ✓ | | |
+| Trae | ✓ | ✓ | | |
+| Trae CN | ✓ | ✓ | | |
+| Windsurf | ✓ | ✓ | | |
+| Zencoder | ✓ | | | |
+<!-- compatibility-table:end -->
 
 ## Troubleshooting
 

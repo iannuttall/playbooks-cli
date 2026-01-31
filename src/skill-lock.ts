@@ -41,6 +41,14 @@ export interface SkillLockEntry {
 }
 
 /**
+ * Tracks dismissed prompts so they're not shown again.
+ */
+export interface DismissedPrompts {
+  /** Dismissed the find-skills prompt */
+  findSkillsPrompt?: boolean;
+}
+
+/**
  * The structure of the skill lock file.
  */
 export interface SkillLockFile {
@@ -48,6 +56,10 @@ export interface SkillLockFile {
   version: number;
   /** Map of skill name to its lock entry */
   skills: Record<string, SkillLockEntry>;
+  /** Tracks dismissed prompts */
+  dismissed?: DismissedPrompts;
+  /** Last selected agents for installation */
+  lastSelectedAgents?: string[];
 }
 
 /**
@@ -265,5 +277,54 @@ function createEmptyLockFile(): SkillLockFile {
   return {
     version: CURRENT_VERSION,
     skills: {},
+    dismissed: {},
   };
+}
+
+/**
+ * Check if a prompt has been dismissed.
+ */
+export async function isPromptDismissed(
+  promptKey: keyof DismissedPrompts,
+  options: SkillLockOptions = {}
+): Promise<boolean> {
+  const lock = await readSkillLock(options);
+  return lock.dismissed?.[promptKey] === true;
+}
+
+/**
+ * Mark a prompt as dismissed.
+ */
+export async function dismissPrompt(
+  promptKey: keyof DismissedPrompts,
+  options: SkillLockOptions = {}
+): Promise<void> {
+  const lock = await readSkillLock(options);
+  if (!lock.dismissed) {
+    lock.dismissed = {};
+  }
+  lock.dismissed[promptKey] = true;
+  await writeSkillLock(lock, options);
+}
+
+/**
+ * Get the last selected agents.
+ */
+export async function getLastSelectedAgents(
+  options: SkillLockOptions = {}
+): Promise<string[] | undefined> {
+  const lock = await readSkillLock(options);
+  return lock.lastSelectedAgents;
+}
+
+/**
+ * Save the selected agents to the lock file.
+ */
+export async function saveSelectedAgents(
+  agents: string[],
+  options: SkillLockOptions = {}
+): Promise<void> {
+  const lock = await readSkillLock(options);
+  lock.lastSelectedAgents = agents;
+  await writeSkillLock(lock, options);
 }

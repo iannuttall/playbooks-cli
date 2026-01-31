@@ -6,6 +6,32 @@ import type { Skill } from './types.js';
 
 const SKIP_DIRS = ['node_modules', '.git', '.github', 'dist', 'build', '__pycache__'];
 
+/**
+ * Check if internal skills should be included.
+ * Set INSTALL_INTERNAL_SKILLS=1 to include internal/WIP skills.
+ */
+const shouldIncludeInternalSkills = (): boolean => {
+  return process.env.INSTALL_INTERNAL_SKILLS === '1';
+};
+
+/**
+ * Check if a skill is marked as internal.
+ */
+export function isInternalSkill(skill: Skill): boolean {
+  const internal = skill.metadata?.internal;
+  return internal === true || internal === 'true' || internal === '1';
+}
+
+/**
+ * Filter out internal skills unless explicitly enabled.
+ */
+export function filterInternalSkills(skills: Skill[]): Skill[] {
+  if (shouldIncludeInternalSkills()) {
+    return skills;
+  }
+  return skills.filter((skill) => !isInternalSkill(skill));
+}
+
 const DENIED_SEGMENTS = new Set([
   '.git',
   'node_modules',
@@ -184,23 +210,40 @@ export async function discoverSkills(basePath: string, subpath?: string): Promis
 
   // Priority 5: known agent directories
   const agentRoots = [
+    join(searchPath, '.adal/skills'),
     join(searchPath, '.agent/skills'),
     join(searchPath, '.agents/skills'),
+    join(searchPath, '.augment/rules'),
+    join(searchPath, '.claude/skills'),
     join(searchPath, '.cline/skills'),
+    join(searchPath, '.codebuddy/skills'),
+    join(searchPath, '.codex/skills'),
     join(searchPath, '.commandcode/skills'),
     join(searchPath, '.continue/skills'),
+    join(searchPath, '.crush/skills'),
     join(searchPath, '.cursor/skills'),
     join(searchPath, '.factory/skills'),
+    join(searchPath, '.gemini/skills'),
     join(searchPath, '.github/skills'),
     join(searchPath, '.goose/skills'),
+    join(searchPath, '.iflow/skills'),
+    join(searchPath, '.junie/skills'),
     join(searchPath, '.kilocode/skills'),
     join(searchPath, '.kiro/skills'),
+    join(searchPath, '.kode/skills'),
+    join(searchPath, '.mcpjam/skills'),
+    join(searchPath, '.mux/skills'),
     join(searchPath, '.neovate/skills'),
+    join(searchPath, '.openclaude/skills'),
+    join(searchPath, '.opencode/skills'),
     join(searchPath, '.openhands/skills'),
     join(searchPath, '.pi/skills'),
+    join(searchPath, '.pochi/skills'),
     join(searchPath, '.qoder/skills'),
+    join(searchPath, '.qwen/skills'),
     join(searchPath, '.roo/skills'),
     join(searchPath, '.trae/skills'),
+    join(searchPath, '.vibe/skills'),
     join(searchPath, '.windsurf/skills'),
     join(searchPath, '.zencoder/skills'),
   ];
@@ -223,7 +266,8 @@ export async function discoverSkills(basePath: string, subpath?: string): Promis
     }
   }
 
-  return skills;
+  // Filter out internal skills unless explicitly enabled
+  return filterInternalSkills(skills);
 }
 
 export function getSkillDisplayName(skill: Skill): string {

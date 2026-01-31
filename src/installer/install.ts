@@ -23,6 +23,17 @@ export async function installSkillForAgent(
 ): Promise<InstallResult> {
   const isGlobal = options.global ?? false;
   const cwd = options.cwd || process.cwd();
+  const agent = agents[agentType];
+  const installMode = options.mode ?? 'symlink';
+
+  if (isGlobal && !agent.globalSkillsDir) {
+    return {
+      success: false,
+      path: '',
+      mode: installMode,
+      error: `Agent ${agent.displayName} does not support global installation`,
+    };
+  }
 
   const rawSkillName = skill.name || basename(skill.path);
   const { canonicalBase, canonicalDir, agentBase, agentDir } = getInstallTargets(
@@ -30,8 +41,6 @@ export async function installSkillForAgent(
     agentType,
     { global: isGlobal, cwd }
   );
-
-  const installMode = options.mode ?? 'symlink';
 
   if (!isPathSafe(canonicalBase, canonicalDir)) {
     return {
@@ -109,7 +118,17 @@ export async function installMintlifySkillForAgent(
 ): Promise<InstallResult> {
   const isGlobal = options.global ?? false;
   const cwd = options.cwd || process.cwd();
+  const agent = agents[agentType];
   const installMode = options.mode ?? 'symlink';
+
+  if (isGlobal && !agent.globalSkillsDir) {
+    return {
+      success: false,
+      path: '',
+      mode: installMode,
+      error: `Agent ${agent.displayName} does not support global installation`,
+    };
+  }
 
   const { canonicalBase, canonicalDir, agentBase, agentDir } = getInstallTargets(
     sanitizeSkillName(skill.mintlifySite),
@@ -196,7 +215,17 @@ export async function installRemoteSkillForAgent(
 ): Promise<InstallResult> {
   const isGlobal = options.global ?? false;
   const cwd = options.cwd || process.cwd();
+  const agent = agents[agentType];
   const installMode = options.mode ?? 'symlink';
+
+  if (isGlobal && !agent.globalSkillsDir) {
+    return {
+      success: false,
+      path: '',
+      mode: installMode,
+      error: `Agent ${agent.displayName} does not support global installation`,
+    };
+  }
 
   const { canonicalBase, canonicalDir, agentBase, agentDir } = getInstallTargets(
     sanitizeSkillName(skill.installName),
@@ -284,9 +313,18 @@ export async function isSkillInstalled(
   const agent = agents[agentType];
   const sanitized = sanitizeSkillName(skillName);
 
+  // Agent doesn't support global installation
+  if (options.global && !agent.globalSkillsDir) {
+    return false;
+  }
+
   const targetBase = options.global
     ? agent.globalSkillsDir
     : join(options.cwd || process.cwd(), agent.skillsDir);
+
+  if (!targetBase) {
+    return false;
+  }
 
   const skillDir = join(targetBase, sanitized);
 

@@ -27,7 +27,7 @@ export interface SkillInstallation {
   isSymlink: boolean;
 }
 
-function getAgentSkillsDir(agent: AgentType, scope: SkillScope, cwd: string): string {
+function getAgentSkillsDir(agent: AgentType, scope: SkillScope, cwd: string): string | undefined {
   const config = agents[agent];
   return scope === 'global' ? config.globalSkillsDir : join(cwd, config.skillsDir);
 }
@@ -55,6 +55,11 @@ export async function listSkillsForAgent(
 ): Promise<InstalledSkill[]> {
   const dir = getAgentSkillsDir(agent, scope, cwd);
   const skills: InstalledSkill[] = [];
+
+  // Agent doesn't support this scope (e.g., Replit has no global)
+  if (!dir) {
+    return skills;
+  }
 
   try {
     const entries = await readdir(dir, { withFileTypes: true });
@@ -147,6 +152,7 @@ export async function findSkillInstallations(
 
   for (const agent of Object.keys(agents) as AgentType[]) {
     const baseDir = getAgentSkillsDir(agent, scope, cwd);
+    if (!baseDir) continue;
     const skillDir = join(baseDir, sanitized);
 
     try {
