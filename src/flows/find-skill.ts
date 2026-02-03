@@ -1,7 +1,7 @@
 import { existsSync } from 'node:fs';
 import { mkdtemp } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { basename, join, relative } from 'node:path';
 import type { MarketplaceSkillOrigin } from '../commands/types.js';
 import { cleanupTempDir, cloneRepoTo } from '../git.js';
 import { searchSkills } from '../playbooks-api.js';
@@ -68,6 +68,50 @@ const ensureSkillMdPath = (skillPath: string) => {
 const sanitizeRepoDir = (owner: string, repo: string) =>
   `${owner}-${repo}`.toLowerCase().replace(/[^a-z0-9._-]+/g, '-');
 
+const toSlug = (value: string | null | undefined) => (value ?? '').trim().toLowerCase();
+
+const trySwapSkillDir = (skillDir: string) => {
+  if (skillDir.startsWith('skill/')) {
+    return `skills/${skillDir.slice('skill/'.length)}`;
+  }
+  if (skillDir.startsWith('skills/')) {
+    return `skill/${skillDir.slice('skills/'.length)}`;
+  }
+  return null;
+};
+
+const buildCandidateSubpaths = (result: FindSkillResult): string[] => {
+  const candidates: string[] = [];
+  const add = (value: string | null | undefined) => {
+    if (!value) return;
+    const normalized = normalizeSkillPath(value).replace(/\/+$/, '');
+    if (!normalized || candidates.includes(normalized)) return;
+    candidates.push(normalized);
+  };
+
+  if (result.path) {
+    const skillDir = toSkillDir(result.path);
+    add(skillDir);
+    const swapped = trySwapSkillDir(skillDir);
+    if (swapped) add(swapped);
+  }
+
+  const slug = toSlug(result.skillSlug || result.name);
+  if (slug) {
+    add(`skills/${slug}`);
+    add(`skill/${slug}`);
+    add(slug);
+  }
+
+  return candidates;
+};
+
+const toSkillMdPathFromDir = (repoDir: string, skillDir: string) => {
+  const relDir = normalizeSkillPath(relative(repoDir, skillDir));
+  const cleaned = relDir === '.' ? '' : relDir;
+  return ensureSkillMdPath(cleaned);
+};
+
 export async function prepareSkillsFromSearchResults(
   selected: FindSkillResult[]
 ): Promise<PreparedSearchSelection> {
@@ -130,19 +174,39 @@ export async function prepareSkillsFromSearchResults(
         throw new Error(`Missing clone for ${result.repoOwner}/${result.repoName}.`);
       }
 
-      const skillDir = toSkillDir(result.path);
-      const subpath = skillDir ? skillDir : undefined;
-      const discovered = await discoverSkills(repoDir, subpath);
-      if (discovered.length === 0) {
+      const candidates = buildCandidateSubpaths(result);
+      const slug = toSlug(result.skillSlug || result.name);
+
+      let skill: Skill | null = null;
+      let discovered: Skill[] = [];
+
+      for (const candidate of candidates) {
+        const candidateDiscovered = await discoverSkills(repoDir, candidate);
+        if (candidateDiscovered.length === 0) {
+          continue;
+        }
+
+        const expectedPath = join(repoDir, candidate);
+        const exact = candidateDiscovered.find((entry) => entry.path === expectedPath);
+        const nameMatch = candidateDiscovered.find((entry) => toSlug(entry.name) === slug);
+        const dirMatch = candidateDiscovered.find((entry) => toSlug(basename(entry.path)) === slug);
+        skill = exact ?? nameMatch ?? dirMatch ?? candidateDiscovered[0] ?? null;
+        discovered = candidateDiscovered;
+        break;
+      }
+
+      if (!skill) {
+        const fallbackDiscovered = await discoverSkills(repoDir);
+        const nameMatch = fallbackDiscovered.find((entry) => toSlug(entry.name) === slug);
+        const dirMatch = fallbackDiscovered.find((entry) => toSlug(basename(entry.path)) === slug);
+        skill = nameMatch ?? dirMatch ?? fallbackDiscovered[0] ?? null;
+        discovered = fallbackDiscovered;
+      }
+
+      if (!skill || discovered.length === 0) {
         throw new Error(`Skill not found in ${result.repoOwner}/${result.repoName}.`);
       }
 
-      const expectedPath = join(repoDir, skillDir);
-      const fallbackSkill = discovered[0];
-      if (!fallbackSkill) {
-        throw new Error(`Skill not found in ${result.repoOwner}/${result.repoName}.`);
-      }
-      const skill = discovered.find((entry) => entry.path === expectedPath) ?? fallbackSkill;
       if (!existsSync(join(skill.path, 'SKILL.md'))) {
         throw new Error(`SKILL.md missing for ${result.name}.`);
       }
@@ -150,11 +214,13 @@ export async function prepareSkillsFromSearchResults(
       skills.push(skill);
 
       const displayName = getSkillDisplayName(skill);
+      const skillPath =
+        skill.path === repoDir ? 'SKILL.md' : toSkillMdPathFromDir(repoDir, skill.path);
       originBySkillName.set(displayName, {
         sourceType: 'github',
         source: `${result.repoOwner}/${result.repoName}`,
         sourceUrl: `https://github.com/${result.repoOwner}/${result.repoName}.git`,
-        skillPath: ensureSkillMdPath(result.path),
+        skillPath,
       });
     }
 
