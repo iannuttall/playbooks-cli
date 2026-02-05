@@ -11,6 +11,11 @@ export type MultiSelectItem<T> = {
   disabled?: boolean;
 };
 
+export type LockedSection<T> = {
+  title: string;
+  items: Array<{ value: T; label: string }>;
+};
+
 const FILTER_THRESHOLD = 10;
 
 export function MultiSelect<T>({
@@ -20,6 +25,7 @@ export function MultiSelect<T>({
   limit = 10,
   hint = MULTI_SELECT_HINT,
   enableFilter,
+  lockedSection,
 }: {
   items: MultiSelectItem<T>[];
   initialSelected?: T[];
@@ -28,6 +34,8 @@ export function MultiSelect<T>({
   hint?: string;
   /** Enable filter input. Defaults to true when 10+ items, false otherwise. */
   enableFilter?: boolean;
+  /** Optional locked section shown at top - these items are always selected and can't be toggled */
+  lockedSection?: LockedSection<T>;
 }) {
   const [cursor, setCursor] = React.useState(0);
   const [infoIndex, setInfoIndex] = React.useState<number | null>(null);
@@ -134,6 +142,7 @@ export function MultiSelect<T>({
       if (total === 0) return;
       const currentFiltered = filteredItems[cursor];
       if (!currentFiltered) return;
+      if (currentFiltered.item.disabled) return;
       const originalIndex = currentFiltered.originalIndex;
       setSelected((prev) => {
         const next = new Set(prev);
@@ -167,10 +176,12 @@ export function MultiSelect<T>({
     } else if (input === 'i' || input === 'I') {
       setInfoIndex((prev) => (prev === cursor ? null : cursor));
     } else if (key.return) {
-      const values = Array.from(selected)
+      // Include locked values first, then selected values
+      const lockedValues = lockedSection ? lockedSection.items.map((i) => i.value) : [];
+      const selectedValues = Array.from(selected)
         .map((index) => items[index]?.value)
         .filter((value): value is T => value !== undefined);
-      onSubmit(values);
+      onSubmit([...lockedValues, ...selectedValues]);
     }
   });
 
@@ -179,8 +190,25 @@ export function MultiSelect<T>({
 
   return (
     <Box flexDirection="column">
+      {/* Locked section (universal agents) */}
+      {lockedSection && lockedSection.items.length > 0 && (
+        <Box flexDirection="column" marginBottom={1}>
+          <Text dimColor>── {lockedSection.title} ──</Text>
+          {lockedSection.items.map((item) => (
+            <Text key={String(item.value)} color="green">
+              {'  '}✓ {item.label}
+            </Text>
+          ))}
+        </Box>
+      )}
+      {/* Other agents section header */}
+      {lockedSection && items.length > 0 && (
+        <Box marginBottom={0}>
+          <Text dimColor>── Other agents ──</Text>
+        </Box>
+      )}
       {showFilter && (
-        <Box marginBottom={1}>
+        <Box marginBottom={1} marginTop={lockedSection ? 1 : 0}>
           <Text dimColor>Filter: </Text>
           <Text>{filter || ' '}</Text>
           <Text dimColor inverse>

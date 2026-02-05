@@ -1,6 +1,11 @@
 import { Box, Text } from 'ink';
 import React from 'react';
-import { agents, detectInstalledAgents } from '../../agents.js';
+import {
+  agents,
+  detectInstalledAgents,
+  getNonUniversalAgents,
+  getUniversalAgents,
+} from '../../agents.js';
 import { getLastSelectedAgents, saveSelectedAgents } from '../../skill-lock.js';
 import type { AgentType } from '../../types.js';
 import { useNavigation } from '../context/navigation.js';
@@ -103,9 +108,31 @@ export function AddTargetsScreen() {
     );
   }
 
-  const items = availableAgents.map((agent) => ({
+  // Split agents into universal (locked) and non-universal (selectable)
+  const universalAgentTypes = getUniversalAgents();
+  const nonUniversalAgentTypes = getNonUniversalAgents();
+
+  // Filter to only available (detected) agents
+  const availableUniversal = availableAgents.filter((a) => universalAgentTypes.includes(a));
+  const availableNonUniversal = availableAgents.filter((a) => nonUniversalAgentTypes.includes(a));
+
+  // Build locked section for universal agents
+  const lockedSection =
+    availableUniversal.length > 0
+      ? {
+          title: 'Universal (.agents/skills)',
+          items: availableUniversal.map((agent) => ({
+            value: agent,
+            label: agents[agent].displayName,
+          })),
+        }
+      : undefined;
+
+  // Build selectable items for non-universal agents
+  const selectableItems = availableNonUniversal.map((agent) => ({
     value: agent,
     label: agents[agent].displayName,
+    hint: agents[agent].skillsDir,
   }));
 
   return (
@@ -149,18 +176,26 @@ export function AddTargetsScreen() {
         <>
           <AddFlowHeader title="Select agents" />
           <MultiSelect
-            items={items}
+            items={selectableItems}
+            lockedSection={lockedSection}
             initialSelected={
-              addSkill.targetAgents ?? (lastSelected.length > 0 ? lastSelected : availableAgents)
+              // Only include non-universal agents in initial selection
+              (
+                addSkill.targetAgents ??
+                (lastSelected.length > 0 ? lastSelected : availableNonUniversal)
+              ).filter((a) => availableNonUniversal.includes(a))
             }
-            enableFilter={true}
+            enableFilter={selectableItems.length >= 10}
             onSubmit={(values) => {
+              // Universal agents are always included via lockedSection
+              // values already contains both locked + selected from MultiSelect
               if (values.length === 0) {
                 setFlash('Select at least one agent.');
                 return;
               }
-              // Save selection for next time
-              saveSelectedAgents(values, { global: true }).catch(() => {});
+              // Save selection for next time (only non-universal for memory)
+              const nonUniversalSelected = values.filter((a) => nonUniversalAgentTypes.includes(a));
+              saveSelectedAgents(nonUniversalSelected, { global: true }).catch(() => {});
               updateAddSkill({
                 targetAgents: values,
                 installGlobally: undefined,

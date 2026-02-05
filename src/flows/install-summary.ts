@@ -1,5 +1,7 @@
 import chalk from 'chalk';
+import { isUniversalAgent } from '../agents.js';
 import { formatList, shortenPath } from '../cli-utils.js';
+import type { AgentType } from '../types.js';
 
 export interface InstallResult {
   skill: string;
@@ -39,9 +41,19 @@ export function formatResultSummary(results: InstallResult[]): { title: string; 
         const shortPath = shortenPath(firstResult.canonicalPath, cwd);
         lines.push(`${chalk.green('✓')} ${shortPath}`);
       }
-      const symlinked = skillResults.filter((r) => !r.symlinkFailed).map((r) => r.agent);
+
+      // Split agents into universal, symlinked, and copied
+      const universal = skillResults
+        .filter((r) => !r.symlinkFailed && isUniversalAgent(r.agentId as AgentType))
+        .map((r) => r.agent);
+      const symlinked = skillResults
+        .filter((r) => !r.symlinkFailed && !isUniversalAgent(r.agentId as AgentType))
+        .map((r) => r.agent);
       const copied = skillResults.filter((r) => r.symlinkFailed).map((r) => r.agent);
 
+      if (universal.length > 0) {
+        lines.push(`  ${chalk.green('universal:')} ${formatList(universal)}`);
+      }
       if (symlinked.length > 0) {
         lines.push(`  ${chalk.dim('symlink →')} ${formatList(symlinked)}`);
       }
