@@ -1,11 +1,14 @@
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import matter from 'gray-matter';
 import type { DocMode, DocSource, DocSourceType } from './types.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const SOURCES_PATH = resolve(__dirname, '..', '..', 'data', 'docs-sources.yml');
+const SOURCE_CANDIDATES = [
+  resolve(__dirname, '..', '..', 'data', 'docs-sources.yml'),
+  resolve(__dirname, '..', 'data', 'docs-sources.yml'),
+];
 
 const DOC_SOURCES = parseSources();
 
@@ -14,9 +17,12 @@ export function getDocSources(): DocSource[] {
 }
 
 function parseSources(): DocSource[] {
+  const sourcePath = SOURCE_CANDIDATES.find((path) => existsSync(path));
+  if (!sourcePath) return [];
+
   let raw = '';
   try {
-    raw = readFileSync(SOURCES_PATH, 'utf-8');
+    raw = readFileSync(sourcePath, 'utf-8');
   } catch {
     return [];
   }
