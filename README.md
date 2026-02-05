@@ -27,6 +27,12 @@ Install a single skill:
 ```bash
 npx playbooks add skill anthropics/skills --skill frontend-design
 ```
+
+Add curated documentation repos to `.agents/docs`:
+```bash
+npx playbooks add docs
+```
+The curated list lives in `data/docs-sources.yml` — PRs welcome.
 ## What are agent skills?
 
 Agent skills are reusable instructions that teach your agent how to do things. It's a universal format that most AI coding tools now support, defined in a `SKILL.md` file with YAML frontmatter containing a `name` and `description`.
@@ -41,10 +47,12 @@ Skills let your agents perform specialized tasks like:
 
 playbooks uses an action/type command structure:
 - `npx playbooks add skill <source>`
+- `npx playbooks add docs`
 - `npx playbooks find skill`
 - `npx playbooks list skill`
 - `npx playbooks manage skill`
 - `npx playbooks update skill [skill-names...]`
+- `npx playbooks update docs`
 - `npx playbooks get <url> [out <path>]`
 
 ### Fetch a URL as markdown

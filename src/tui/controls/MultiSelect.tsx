@@ -26,6 +26,8 @@ export function MultiSelect<T>({
   hint = MULTI_SELECT_HINT,
   enableFilter,
   lockedSection,
+  hintMode = 'all',
+  onSelectionChange,
 }: {
   items: MultiSelectItem<T>[];
   initialSelected?: T[];
@@ -36,6 +38,10 @@ export function MultiSelect<T>({
   enableFilter?: boolean;
   /** Optional locked section shown at top - these items are always selected and can't be toggled */
   lockedSection?: LockedSection<T>;
+  /** Control per-item hint display. */
+  hintMode?: 'all' | 'active' | 'none';
+  /** Optional callback whenever selection changes. */
+  onSelectionChange?: (values: T[]) => void;
 }) {
   const [cursor, setCursor] = React.useState(0);
   const [infoIndex, setInfoIndex] = React.useState<number | null>(null);
@@ -94,6 +100,17 @@ export function MultiSelect<T>({
     return `${value.slice(0, max - 3)}...`;
   };
 
+  const getSelectedValues = React.useCallback(
+    (nextSelected: Set<number>) => {
+      const lockedValues = lockedSection ? lockedSection.items.map((i) => i.value) : [];
+      const selectedValues = Array.from(nextSelected)
+        .map((index) => items[index]?.value)
+        .filter((value): value is T => value !== undefined);
+      return [...lockedValues, ...selectedValues];
+    },
+    [items, lockedSection]
+  );
+
   useInput((input, key) => {
     // Handle filter input when filter is enabled
     if (showFilter) {
@@ -108,6 +125,8 @@ export function MultiSelect<T>({
         input.length === 1 &&
         !key.ctrl &&
         !key.meta &&
+        !key.return &&
+        !key.tab &&
         input !== ' ' &&
         input !== 's' &&
         input !== 'S' &&
@@ -148,6 +167,9 @@ export function MultiSelect<T>({
         const next = new Set(prev);
         if (next.has(originalIndex)) next.delete(originalIndex);
         else next.add(originalIndex);
+        if (onSelectionChange) {
+          onSelectionChange(getSelectedValues(next));
+        }
         return next;
       });
     } else if (input === 's' || input === 'S') {
@@ -164,12 +186,18 @@ export function MultiSelect<T>({
           for (const index of selectableIndices) {
             next.delete(index);
           }
+          if (onSelectionChange) {
+            onSelectionChange(getSelectedValues(next));
+          }
           return next;
         }
         // Select all filtered items
         const next = new Set(prev);
         for (const index of selectableIndices) {
           next.add(index);
+        }
+        if (onSelectionChange) {
+          onSelectionChange(getSelectedValues(next));
         }
         return next;
       });
@@ -232,6 +260,7 @@ export function MultiSelect<T>({
           const marker = isSelected ? '◼' : '◻';
           const pointer = isActive ? '❯' : ' ';
           const color = item.disabled ? 'gray' : isActive ? 'cyan' : undefined;
+          const showHint = hintMode === 'all' || (hintMode === 'active' && isActive);
           return (
             <Box key={`${item.label}-${originalIndex}`} flexDirection="column">
               <Text color={color}>
@@ -241,7 +270,7 @@ export function MultiSelect<T>({
                 <Text dimColor>
                   {'  '} {truncate(item.info)}
                 </Text>
-              ) : item.hint ? (
+              ) : item.hint && showHint ? (
                 <Text dimColor>
                   {'  '} {item.hint}
                 </Text>

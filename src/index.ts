@@ -122,6 +122,13 @@ applyAddSkillOptions(
     })
 );
 
+addCmd
+  .command('docs')
+  .description('Add docs')
+  .action(async (options) => {
+    await launch({ intent: 'add-docs', options }, 'add-docs');
+  });
+
 const listCmd = program.command('list').description('List installed resources');
 
 listCmd
@@ -157,6 +164,13 @@ updateCmd
   .option('-y, --yes', 'Skip prompts and update all matching skills')
   .action(async (skillNames: string[] | undefined, options) => {
     await launch({ intent: 'update', options, updateSkillNames: skillNames }, 'update');
+  });
+
+updateCmd
+  .command('docs')
+  .description('Update installed docs')
+  .action(async (options) => {
+    await launch({ intent: 'update-docs', options }, 'update-docs');
   });
 
 const skillCmd = applyAddSkillOptions(

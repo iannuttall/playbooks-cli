@@ -1,6 +1,6 @@
 {
   "name": "playbooks",
-  "version": "0.1.11",
+  "version": "0.1.12",
   "description": "Install agent skills, MCPs and docs into your coding agents from any git repository.",
   "type": "module",
   "bin": {
@@ -8,7 +8,8 @@
   },
   "files": [
     "dist",
-    "README.md"
+    "README.md",
+    "data"
   ],
   "scripts": {
     "build": "tsup src/index.ts --format esm --dts --clean",

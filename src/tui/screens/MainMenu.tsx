@@ -6,11 +6,13 @@ import { SelectMenu } from '../controls/SelectMenu.js';
 export function MainMenu() {
   const { navigateTo, resetAddSkill, resetFindSkill, setInvocation } = useNavigation();
   const items = [
+    { label: 'Add docs', value: 'add-docs' },
     { label: 'Add skill', value: 'add' },
     { label: 'Find skill', value: 'find' },
     { label: 'List skills', value: 'list' },
     { label: 'Remove skills', value: 'manage' },
     { label: 'Update skills', value: 'update' },
+    { label: 'Update docs', value: 'update-docs' },
     { label: 'Exit', value: 'exit' },
   ];
 
@@ -26,6 +28,12 @@ export function MainMenu() {
               setInvocation({ intent: 'none', options: {} });
               navigateTo('add-source');
               break;
+            case 'add-docs':
+              resetAddSkill();
+              resetFindSkill();
+              setInvocation({ intent: 'add-docs', options: {} });
+              navigateTo('add-docs');
+              break;
             case 'find':
               resetAddSkill();
               resetFindSkill();
@@ -40,6 +48,10 @@ export function MainMenu() {
               break;
             case 'update':
               navigateTo('update');
+              break;
+            case 'update-docs':
+              setInvocation({ intent: 'update-docs', options: {} });
+              navigateTo('update-docs');
               break;
             case 'exit':
               process.exit(0);

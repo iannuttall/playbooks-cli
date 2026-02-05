@@ -19,6 +19,22 @@ export async function cloneRepoTo(url: string, destination: string, ref?: string
   await git.clone(url, destination, cloneOptions);
 }
 
+export async function cloneRepoSparseTo(
+  url: string,
+  destination: string,
+  sparsePath: string,
+  ref?: string
+): Promise<void> {
+  const git = simpleGit();
+  const cloneOptions = ['--depth', '1', '--filter=blob:none', '--sparse'];
+  if (ref) {
+    cloneOptions.push('--branch', ref);
+  }
+  await git.clone(url, destination, cloneOptions);
+  const repo = simpleGit({ baseDir: destination });
+  await repo.raw(['sparse-checkout', 'set', sparsePath]);
+}
+
 export async function cleanupTempDir(dir: string): Promise<void> {
   if (!isTempPathSafe(dir)) {
     throw new Error('Attempted to clean up directory outside of temp directory');

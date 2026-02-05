@@ -5,6 +5,7 @@ import { BrandHeader } from './ui/BrandHeader.js';
 import { FlashBar } from './ui/FlashBar.js';
 
 import { AddConfirmScreen } from './screens/AddConfirm.js';
+import { AddDocsScreen } from './screens/AddDocs.js';
 import { AddInstallScreen } from './screens/AddInstall.js';
 import { AddModeScreen } from './screens/AddMode.js';
 import { AddResultScreen } from './screens/AddResult.js';
@@ -20,6 +21,7 @@ import { MainMenu } from './screens/MainMenu.js';
 import { ManageScreen } from './screens/ManageSkills.js';
 import { MarketplacePluginScreen } from './screens/MarketplacePlugins.js';
 import { MarketplaceSkillScreen } from './screens/MarketplaceSkills.js';
+import { UpdateDocsScreen } from './screens/UpdateDocs.js';
 import { UpdateScreen } from './screens/UpdateSkills.js';
 
 export function ScreenRouter() {
@@ -31,6 +33,8 @@ export function ScreenRouter() {
         return <MainMenu />;
       case 'add-source':
         return <AddSourceScreen />;
+      case 'add-docs':
+        return <AddDocsScreen />;
       case 'add-marketplace-plugins':
         return <MarketplacePluginScreen />;
       case 'add-marketplace-skills':
@@ -61,6 +65,8 @@ export function ScreenRouter() {
         return <ManageScreen />;
       case 'update':
         return <UpdateScreen />;
+      case 'update-docs':
+        return <UpdateDocsScreen />;
       default:
         return null;
     }

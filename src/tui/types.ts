@@ -10,6 +10,7 @@ import type { AgentType, ParsedSource, Skill } from '../types.js';
 export type Screen =
   | 'main'
   | 'add-source'
+  | 'add-docs'
   | 'add-marketplace-plugins'
   | 'add-marketplace-skills'
   | 'get-url'
@@ -24,17 +25,20 @@ export type Screen =
   | 'add-result'
   | 'list'
   | 'manage'
-  | 'update';
+  | 'update'
+  | 'update-docs';
 
 export type CliIntent =
   | 'none'
   | 'add-skill'
+  | 'add-docs'
   | 'skill'
   | 'find-skill'
   | 'get-url'
   | 'list'
   | 'manage'
-  | 'update';
+  | 'update'
+  | 'update-docs';
 
 export type CliInvocation = {
   intent: CliIntent;

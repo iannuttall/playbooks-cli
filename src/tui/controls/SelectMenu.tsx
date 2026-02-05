@@ -19,7 +19,7 @@ const SelectInputTyped = SelectInput as unknown as <T>(
   props: SelectInputProps<T>
 ) => React.ReactElement;
 
-export function SelectMenu<T extends MenuItem>({
+export function SelectMenu<T extends MenuItem<unknown>>({
   items,
   onSelect,
   hint = MENU_HINT,
