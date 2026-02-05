@@ -234,7 +234,6 @@ export async function discoverSkills(basePath: string, subpath?: string): Promis
     join(searchPath, '.mcpjam/skills'),
     join(searchPath, '.mux/skills'),
     join(searchPath, '.neovate/skills'),
-    join(searchPath, '.openclaude/skills'),
     join(searchPath, '.opencode/skills'),
     join(searchPath, '.openhands/skills'),
     join(searchPath, '.pi/skills'),

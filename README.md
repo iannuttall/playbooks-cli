@@ -252,6 +252,9 @@ Example with overrides:
 
 Skills can be installed to any of these supported agents. Use `-g, --global` to install to the global path instead of project-level.
 
+> [!TIP]
+> **Universal agents** — Many agents now converge on `.agents/skills/` as a shared directory. Skills installed there are automatically available to Amp, Codex, Droid, Gemini CLI, GitHub Copilot, Kimi Code CLI, OpenCode, and Replit. When you install a skill, playbooks writes it once to `.agents/skills/` and symlinks it to any non-universal agents you've selected.
+
 <!-- available-agents:start -->
 | Agent | `--agent` | Project Path | Global Path |
 |-------|-----------|--------------|-------------|
@@ -267,7 +270,7 @@ Skills can be installed to any of these supported agents. Use `-g, --global` to 
 | Continue | `continue` | `.continue/skills/` | `~/.continue/skills/` |
 | Crush | `crush` | `.crush/skills/` | `~/.config/crush/skills/` |
 | Cursor | `cursor` | `.cursor/skills/` | `~/.cursor/skills/` |
-| Droid | `droid` | `.factory/skills/` | `~/.factory/skills/` |
+| Droid | `droid` | `.agents/skills/` | `~/.agents/skills/` |
 | Gemini CLI | `gemini-cli` | `.agents/skills/` | `~/.agents/skills/` |
 | GitHub Copilot | `github-copilot` | `.agents/skills/` | `~/.agents/skills/` |
 | Goose | `goose` | `.goose/skills/` | `~/.config/goose/skills/` |
@@ -359,7 +362,6 @@ The CLI searches for skills in these locations within a repository:
 - `.continue/skills/`
 - `.crush/skills/`
 - `.cursor/skills/`
-- `.factory/skills/`
 - `.goose/skills/`
 - `.iflow/skills/`
 - `.junie/skills/`
@@ -411,7 +413,6 @@ Skills are generally compatible across agents since they follow a shared [Agent 
 | Antigravity | ✓ | ✓ | | |
 | Augment | ✓ | ✓ | | |
 | Claude Code | ✓ | ✓ | ✓ | ✓ |
-| Clawdbot | ✓ | ✓ | | |
 | Cline | ✓ | ✓ | | ✓ |
 | CodeBuddy | ✓ | ✓ | | |
 | Codex | ✓ | ✓ | | |
@@ -433,7 +434,6 @@ Skills are generally compatible across agents since they follow a shared [Agent 
 | Mistral Vibe | ✓ | ✓ | | |
 | Mux | ✓ | ✓ | | |
 | Neovate | ✓ | ✓ | | |
-| OpenClaude IDE | ✓ | ✓ | | |
 | OpenClaw | ✓ | ✓ | | |
 | OpenCode | ✓ | ✓ | | |
 | OpenHands | ✓ | ✓ | | |
@@ -487,7 +487,6 @@ Telemetry is also automatically disabled in CI environments.
 - [Amp Skills Documentation](https://ampcode.com/manual#agent-skills)
 - [Antigravity Skills Documentation](https://antigravity.google/docs/skills)
 - [Claude Code Skills Documentation](https://code.claude.com/docs/en/skills)
-- [Clawdbot Skills Documentation](https://docs.clawd.bot/tools/skills)
 - [Cline Skills Documentation](https://docs.cline.bot/features/skills)
 - [Codex Skills Documentation](https://developers.openai.com/codex/skills)
 - [Command Code Skills Documentation](https://commandcode.ai/docs/skills)

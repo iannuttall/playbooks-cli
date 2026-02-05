@@ -113,8 +113,8 @@ export const agents: Record<AgentType, AgentConfig> = {
   droid: {
     name: 'droid',
     displayName: 'Droid',
-    skillsDir: '.factory/skills',
-    globalSkillsDir: join(home, '.factory/skills'),
+    skillsDir: '.agents/skills',
+    globalSkillsDir: universalGlobalSkillsDir,
     detectInstalled: async () => {
       return existsSync(join(home, '.factory'));
     },
