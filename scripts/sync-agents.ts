@@ -21,6 +21,9 @@ function generateAgentNames(): string {
 
 function generateAvailableAgentsTable(): string {
   const rows = Object.entries(agents).map(([key, a]) => {
+    if (!a.globalSkillsDir) {
+      return `| ${a.displayName} | \`${key}\` | \`${a.skillsDir}/\` | *(project only)* |`;
+    }
     const globalPath = a.globalSkillsDir.replace(homedir(), '~');
     return `| ${a.displayName} | \`${key}\` | \`${a.skillsDir}/\` | \`${globalPath}/\` |`;
   });

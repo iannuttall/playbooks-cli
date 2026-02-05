@@ -12,6 +12,13 @@ const isExcluded = (name: string): boolean => {
 
 export async function createSymlink(target: string, linkPath: string): Promise<boolean> {
   try {
+    const resolvedTarget = resolve(target);
+    const resolvedLinkPath = resolve(linkPath);
+
+    if (resolvedTarget === resolvedLinkPath) {
+      return true;
+    }
+
     try {
       const stats = await lstat(linkPath);
       if (stats.isSymbolicLink()) {

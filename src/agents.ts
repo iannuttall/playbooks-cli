@@ -7,6 +7,7 @@ const home = homedir();
 const configHome = process.env.XDG_CONFIG_HOME?.trim() || join(home, '.config');
 const codexHome = process.env.CODEX_HOME?.trim() || join(home, '.codex');
 const claudeHome = process.env.CLAUDE_CONFIG_DIR?.trim() || join(home, '.claude');
+const universalGlobalSkillsDir = join(home, '.agents', 'skills');
 
 export const agents: Record<AgentType, AgentConfig> = {
   adal: {
@@ -20,7 +21,7 @@ export const agents: Record<AgentType, AgentConfig> = {
     name: 'amp',
     displayName: 'Amp',
     skillsDir: '.agents/skills',
-    globalSkillsDir: join(configHome, 'agents/skills'),
+    globalSkillsDir: universalGlobalSkillsDir,
     detectInstalled: async () => existsSync(join(configHome, 'amp')),
   },
   antigravity: {
@@ -72,7 +73,7 @@ export const agents: Record<AgentType, AgentConfig> = {
     name: 'codex',
     displayName: 'Codex',
     skillsDir: '.agents/skills',
-    globalSkillsDir: join(codexHome, 'skills'),
+    globalSkillsDir: universalGlobalSkillsDir,
     detectInstalled: async () => {
       return existsSync(codexHome) || existsSync('/etc/codex');
     },
@@ -122,7 +123,7 @@ export const agents: Record<AgentType, AgentConfig> = {
     name: 'gemini-cli',
     displayName: 'Gemini CLI',
     skillsDir: '.agents/skills',
-    globalSkillsDir: join(home, '.gemini/skills'),
+    globalSkillsDir: universalGlobalSkillsDir,
     detectInstalled: async () => {
       return existsSync(join(home, '.gemini'));
     },
@@ -131,7 +132,7 @@ export const agents: Record<AgentType, AgentConfig> = {
     name: 'github-copilot',
     displayName: 'GitHub Copilot',
     skillsDir: '.agents/skills',
-    globalSkillsDir: join(home, '.copilot/skills'),
+    globalSkillsDir: universalGlobalSkillsDir,
     detectInstalled: async () => {
       return existsSync(join(process.cwd(), '.github')) || existsSync(join(home, '.copilot'));
     },
@@ -176,7 +177,7 @@ export const agents: Record<AgentType, AgentConfig> = {
     name: 'kimi-cli',
     displayName: 'Kimi Code CLI',
     skillsDir: '.agents/skills',
-    globalSkillsDir: join(configHome, 'agents/skills'),
+    globalSkillsDir: universalGlobalSkillsDir,
     detectInstalled: async () => {
       return existsSync(join(home, '.kimi'));
     },
@@ -258,7 +259,7 @@ export const agents: Record<AgentType, AgentConfig> = {
     name: 'opencode',
     displayName: 'OpenCode',
     skillsDir: '.agents/skills',
-    globalSkillsDir: join(configHome, 'opencode/skills'),
+    globalSkillsDir: universalGlobalSkillsDir,
     detectInstalled: async () => {
       return existsSync(join(configHome, 'opencode')) || existsSync(join(claudeHome, 'skills'));
     },
