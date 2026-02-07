@@ -1,3 +1,4 @@
+import { scanCodeSafetyFile } from '../code-safety-scan.js';
 import { RULES } from './rules.js';
 import {
   SKILL_STATIC_SCAN_RULESET_VERSION,
@@ -22,9 +23,33 @@ import {
   verdictFromLevel,
 } from './shared.js';
 
+function isTestLikePath(path: string): boolean {
+  const p = path.replace(/\\/g, '/').toLowerCase();
+  if (p.includes('/__tests__/')) return true;
+  if (p.includes('/tests/')) return true;
+  if (p.includes('/test/')) return true;
+  if (/\.(test|spec)\.[mc]?[jt]sx?$/.test(p)) return true;
+  return false;
+}
+
 export function scanSkillStatic(
   files: SkillStaticScanFile[],
   options: SkillStaticScanOptions = {}
+): SkillStaticScanResult {
+  return scanSkillInternal(files, options, { includeCodeSafety: false });
+}
+
+export function scanSkillSafety(
+  files: SkillStaticScanFile[],
+  options: SkillStaticScanOptions = {}
+): SkillStaticScanResult {
+  return scanSkillInternal(files, options, { includeCodeSafety: true });
+}
+
+function scanSkillInternal(
+  files: SkillStaticScanFile[],
+  options: SkillStaticScanOptions,
+  { includeCodeSafety }: { includeCodeSafety: boolean }
 ): SkillStaticScanResult {
   const maxFiles = options.maxFiles ?? 120;
   const maxTotalBytes = options.maxTotalBytes ?? 1_200_000;
@@ -77,6 +102,41 @@ export function scanSkillStatic(
 
     bytesScanned += size;
     filesScanned += 1;
+
+    const testLike = includeCodeSafety ? isTestLikePath(file.path) : false;
+    let codeHasDynamicExec = false;
+
+    if (includeCodeSafety) {
+      const codeCandidates = scanCodeSafetyFile({ path: file.path, content, size });
+      // Prefer applying the highest scoring candidate first when scoreKeys collide
+      // (e.g. we de-dupe by dimension for code-safety).
+      codeCandidates.sort(
+        (a, b) => b.signal.points - a.signal.points || a.signal.id.localeCompare(b.signal.id)
+      );
+      codeHasDynamicExec = codeCandidates.some(
+        (c) =>
+          c.signal.id === 'dynamic_code_execution_eval' ||
+          c.signal.id === 'dynamic_code_execution_function'
+      );
+      for (const candidate of codeCandidates) {
+        if (signals.length >= maxSignals) {
+          truncated = true;
+          break;
+        }
+        signals.push(candidate.signal);
+        if (candidate.scoreKey && !scoreApplied.has(candidate.scoreKey)) {
+          // For scanSkillSafety, avoid letting test files influence scoring.
+          if (!testLike) {
+            scoreApplied.add(candidate.scoreKey);
+            dimensionScores[candidate.signal.dimension] = clamp(
+              dimensionScores[candidate.signal.dimension] + candidate.signal.points,
+              0,
+              100
+            );
+          }
+        }
+      }
+    }
 
     for (const rule of RULES) {
       if (signals.length >= maxSignals) {
@@ -193,7 +253,15 @@ export function scanSkillStatic(
         reason,
       });
 
-      if (!scoreApplied.has(scoreKey)) {
+      // In scanSkillSafety:
+      // - Don't let test files influence scoring.
+      // - Don't let the static eval rule stack on top of code-safety eval detection.
+      const shouldScore = !(
+        includeCodeSafety &&
+        (testLike || (rule.id === 'eval_exec' && codeHasDynamicExec))
+      );
+
+      if (shouldScore && !scoreApplied.has(scoreKey)) {
         scoreApplied.add(scoreKey);
         dimensionScores[rule.dimension] = clamp(dimensionScores[rule.dimension] + points, 0, 100);
       }

@@ -60,7 +60,7 @@ export type SkillStaticScanOptions = {
   maxSignals?: number;
 };
 
-export const SKILL_STATIC_SCAN_RULESET_VERSION = 'static-scan@2026-02-07.3';
+export const SKILL_STATIC_SCAN_RULESET_VERSION = 'static-scan@2026-02-07.5';
 
 export const clamp = (n: number, min: number, max: number) => Math.min(Math.max(n, min), max);
 
@@ -118,8 +118,11 @@ export const isProbablyTextPath = (path: string) => {
     lower.endsWith('.rs') ||
     lower.endsWith('.java') ||
     lower.endsWith('.ts') ||
+    lower.endsWith('.mts') ||
+    lower.endsWith('.cts') ||
     lower.endsWith('.tsx') ||
     lower.endsWith('.js') ||
+    lower.endsWith('.jsx') ||
     lower.endsWith('.mjs') ||
     lower.endsWith('.cjs')
   );

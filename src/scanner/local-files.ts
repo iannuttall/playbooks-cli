@@ -43,9 +43,35 @@ export async function collectSkillScanFiles(
 
   const files: SkillStaticScanFile[] = [];
   const visitedDirs = new Set<string>([baseReal]);
+  const seen = new Set<string>();
   let truncated = false;
   let bytes = 0;
   let skipped = 0;
+
+  // Always try to include SKILL.md first so it isn't missed when caps are tight.
+  const skillMdFull = join(skillDir, 'SKILL.md');
+  const skillMdRel = 'SKILL.md';
+  try {
+    if (
+      files.length < maxFiles &&
+      isPathSafe(skillDir, skillMdFull) &&
+      isProbablyTextPath(skillMdRel)
+    ) {
+      const s = await stat(skillMdFull);
+      const size = typeof s.size === 'number' ? s.size : 0;
+      if (size > 0 && size <= maxFileBytes && bytes + size <= maxTotalBytes) {
+        const content = await readFile(skillMdFull, 'utf-8');
+        const usedSize = size > 0 ? size : content.length;
+        if (usedSize > 0 && usedSize <= maxFileBytes && bytes + usedSize <= maxTotalBytes) {
+          bytes += usedSize;
+          files.push({ path: skillMdRel, content, size: usedSize });
+          seen.add(skillMdRel.toLowerCase());
+        }
+      }
+    }
+  } catch {
+    // ignore missing/invalid SKILL.md
+  }
 
   const queue: string[] = [skillDir];
 
@@ -56,6 +82,7 @@ export async function collectSkillScanFiles(
     let entries: Array<import('node:fs').Dirent>;
     try {
       entries = await readdir(current, { withFileTypes: true });
+      entries.sort((a, b) => a.name.localeCompare(b.name));
     } catch {
       continue;
     }
@@ -129,6 +156,11 @@ export async function collectSkillScanFiles(
         continue;
       }
 
+      if (seen.has(relPath.toLowerCase())) {
+        skipped += 1;
+        continue;
+      }
+
       if (!isProbablyTextPath(relPath)) {
         skipped += 1;
         continue;
@@ -168,6 +200,7 @@ export async function collectSkillScanFiles(
         }
         bytes += usedSize;
         files.push({ path: relPath, content, size: usedSize });
+        seen.add(relPath.toLowerCase());
       } catch {
         skipped += 1;
       }

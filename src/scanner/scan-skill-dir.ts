@@ -1,6 +1,6 @@
 import { collectSkillScanFiles } from './local-files.js';
 import type { SkillStaticScanOptions, SkillStaticScanResult } from './static-scan.js';
-import { scanSkillStatic } from './static-scan.js';
+import { scanSkillSafety } from './static-scan.js';
 
 export type SkillDirScanResult = {
   dir: string;
@@ -17,7 +17,7 @@ export async function scanSkillDir(
   options: SkillStaticScanOptions = {}
 ): Promise<SkillDirScanResult> {
   const collected = await collectSkillScanFiles(dir, options);
-  const staticScan = scanSkillStatic(collected.files, options);
+  const staticScan = scanSkillSafety(collected.files, options);
   return {
     dir,
     staticScan,
