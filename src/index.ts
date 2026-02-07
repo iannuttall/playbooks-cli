@@ -240,6 +240,15 @@ findCmd
     }
   });
 
+const scanCmd = program.command('scan').description('Scan installed resources');
+
+scanCmd
+  .command('skills')
+  .description('Security scan all installed skills (project + global)')
+  .action(async () => {
+    await launch({ intent: 'scan', options: {} }, 'scan-skills');
+  });
+
 program
   .command('get <url> [outKeyword] [outPath]')
   .description('Fetch a URL as markdown')

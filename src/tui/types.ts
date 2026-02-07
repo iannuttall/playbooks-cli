@@ -4,6 +4,8 @@ import type {
   MarketplaceSkillOrigin,
 } from '../commands/types.js';
 import type { InstallResult } from '../flows/install-summary.js';
+import type { SkillSecuritySummary } from '../flows/plan-summary.js';
+import type { SecurityScanRow } from '../flows/security-scan.js';
 import type { MarketplaceContext, MarketplacePlugin } from '../marketplace.js';
 import type { AgentType, ParsedSource, Skill } from '../types.js';
 
@@ -16,7 +18,9 @@ export type Screen =
   | 'get-url'
   | 'find-skill-search'
   | 'find-skill-results'
+  | 'scan-skills'
   | 'add-skill-select'
+  | 'add-security-scan'
   | 'add-targets'
   | 'add-scope'
   | 'add-mode'
@@ -33,6 +37,7 @@ export type CliIntent =
   | 'add-skill'
   | 'add-docs'
   | 'skill'
+  | 'scan'
   | 'find-skill'
   | 'get-url'
   | 'list'
@@ -67,6 +72,10 @@ export type AddSkillState = {
   installGlobally?: boolean;
   installMode?: 'symlink' | 'copy';
   planLines?: string[];
+  securityBySkillName?: Map<string, SkillSecuritySummary>;
+  securityScanRows?: SecurityScanRow[];
+  /** True when the user explicitly typed "install" to proceed despite high/critical findings. */
+  securityAccepted?: boolean;
   installResults?: InstallResult[];
   installError?: string;
 };

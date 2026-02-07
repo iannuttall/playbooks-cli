@@ -14,3 +14,5 @@ export const UPDATE_HINT_NEEDS_ONLY =
 export const UPDATE_HINT_ALL =
   'u to show needs update only, s to select all, m for main, q/esc to quit';
 export const UPDATE_EMPTY_HINT = 'Press u to show all, m for main, q/esc to quit';
+export const SCAN_SKILLS_HINT =
+  'Use ↑↓ to navigate, i for info, Enter for actions, m for main, q/esc to quit';

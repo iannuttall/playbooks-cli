@@ -3,49 +3,154 @@ import { Box, Text } from 'ink';
 import React from 'react';
 import { agents } from '../../agents.js';
 import { formatList, shortenPath } from '../../cli-utils.js';
-import { buildPlanSummary } from '../../flows/plan-summary.js';
+import { type SkillSecuritySummary, buildPlanSummary } from '../../flows/plan-summary.js';
+import { type SecurityScanRow, scanSkillsForSecurity } from '../../flows/security-scan.js';
 import { getCanonicalSkillsBase } from '../../installer.js';
+import { getSkillDisplayName } from '../../skills.js';
 import { useNavigation } from '../context/navigation.js';
 import { SelectMenu } from '../controls/SelectMenu.js';
+import { useTextInput } from '../hooks/useTextInput.js';
 import { AddFlowHeader } from '../ui/AddFlowHeader.js';
+import { useSpinnerFrame } from '../ui/spinner.js';
+
+import type { ManualView } from './add-confirm-security.js';
+import { ManualSecurityGate } from './add-confirm-security.js';
 
 export function AddConfirmScreen() {
-  const { invocation, addSkill, updateAddSkill, navigateTo, navAction } = useNavigation();
+  const {
+    invocation,
+    addSkill,
+    updateAddSkill,
+    navigateTo,
+    navAction,
+    setFlash,
+    resetTo,
+    setBackHandler,
+  } = useNavigation();
   const options = invocation.options;
   const [lines, setLines] = React.useState<string[]>([]);
+  const [scanStatus, setScanStatus] = React.useState<'idle' | 'scanning' | 'done'>('idle');
+  const [requiresManual, setRequiresManual] = React.useState(false);
+  const [confirmText, setConfirmText] = React.useState('');
+  const [scanRows, setScanRows] = React.useState<SecurityScanRow[]>([]);
+  const [manualView, setManualView] = React.useState<ManualView>('menu');
+  const [selectedRow, setSelectedRow] = React.useState<SecurityScanRow | null>(null);
+  const spinner = useSpinnerFrame(scanStatus === 'scanning');
+  const { wrapOnChange } = useTextInput({
+    onClear: () => {
+      setConfirmText('');
+    },
+    disabled: !requiresManual || manualView !== 'type-confirm',
+  });
 
   React.useEffect(() => {
-    if (!addSkill.selectedSkills || !addSkill.targetAgents) return;
-    if (addSkill.installGlobally === undefined || !addSkill.installMode) return;
+    const selectedSkills = addSkill.selectedSkills;
+    const targetAgents = addSkill.targetAgents;
+    const installGlobally = addSkill.installGlobally;
+    const installMode = addSkill.installMode;
 
-    if (addSkill.planLines && addSkill.planLines.length > 0) {
-      setLines(addSkill.planLines);
-      return;
-    }
+    if (!selectedSkills || !targetAgents) return;
+    if (installGlobally === undefined || !installMode) return;
+    let cancelled = false;
 
-    buildPlanSummary(
-      addSkill.selectedSkills,
-      addSkill.targetAgents,
-      addSkill.installGlobally,
-      addSkill.installMode
-    ).then((summary) => {
+    const run = async () => {
+      setScanStatus('scanning');
+
+      let securityBySkillName: Map<string, SkillSecuritySummary> | undefined =
+        addSkill.securityBySkillName;
+      let rows: SecurityScanRow[] | undefined = addSkill.securityScanRows;
+      const expectedNames = selectedSkills.map(getSkillDisplayName);
+
+      const map = securityBySkillName;
+      const cachedOk = !!map && !!rows && expectedNames.every((name) => map.has(name));
+
+      if (!cachedOk) {
+        const scanned = await scanSkillsForSecurity(selectedSkills, {
+          maxFiles: 120,
+          maxFileBytes: 160_000,
+          maxTotalBytes: 900_000,
+          maxSignals: 25,
+        });
+        securityBySkillName = scanned.securityBySkillName;
+        rows = scanned.rows;
+        updateAddSkill({ securityBySkillName, securityScanRows: rows });
+      }
+
+      const summary = await buildPlanSummary(
+        selectedSkills,
+        targetAgents,
+        installGlobally,
+        installMode,
+        securityBySkillName
+      );
+
+      if (cancelled) return;
+
+      const isRisky = Array.from(securityBySkillName?.values() ?? []).some(
+        (s) => s.verdict === 'block' || s.level === 'high' || s.level === 'critical'
+      );
+
+      setRequiresManual(isRisky && !addSkill.securityAccepted);
+      setManualView('menu');
+      setSelectedRow(null);
+      setScanStatus('done');
       updateAddSkill({ planLines: summary });
       setLines(summary);
+      setScanRows(rows ?? []);
+
+      const canAutoProceed = !isRisky || addSkill.securityAccepted;
+      if (options.yes && canAutoProceed && navAction !== 'pop') {
+        navigateTo('add-install');
+      }
+    };
+
+    run().catch((err) => {
+      if (cancelled) return;
+      setScanStatus('done');
+      setFlash(err instanceof Error ? err.message : 'Failed to scan skills.');
     });
+
+    return () => {
+      cancelled = true;
+    };
   }, [
     addSkill.selectedSkills,
     addSkill.targetAgents,
     addSkill.installGlobally,
     addSkill.installMode,
-    addSkill.planLines,
+    addSkill.securityBySkillName,
+    addSkill.securityScanRows,
+    addSkill.securityAccepted,
     updateAddSkill,
+    options.yes,
+    navAction,
+    navigateTo,
+    setFlash,
   ]);
 
   React.useEffect(() => {
-    if (navAction === 'pop') return;
-    if (!options.yes) return;
-    navigateTo('add-install');
-  }, [navAction, options.yes, navigateTo]);
+    if (!requiresManual) {
+      setBackHandler(null);
+      return () => setBackHandler(null);
+    }
+    if (manualView === 'details') {
+      setBackHandler(() => {
+        setManualView('menu');
+        return true;
+      });
+      return () => setBackHandler(null);
+    }
+    if (manualView === 'detail-skill') {
+      setBackHandler(() => {
+        setSelectedRow(null);
+        setManualView('details');
+        return true;
+      });
+      return () => setBackHandler(null);
+    }
+    setBackHandler(null);
+    return () => setBackHandler(null);
+  }, [requiresManual, manualView, setBackHandler]);
 
   const skillsCount = addSkill.selectedSkills?.length ?? 0;
   const agentsCount = addSkill.targetAgents?.length ?? 0;
@@ -105,20 +210,38 @@ export function AddConfirmScreen() {
         <Text key={key}>{line}</Text>
       ))}
       <Box marginTop={1}>
-        <SelectMenu
-          items={[
-            { label: 'Install now', value: 'install' },
-            { label: 'Cancel', value: 'cancel' },
-          ]}
-          hint="Confirm to start installation"
-          onSelect={(item) => {
-            if (item.value === 'install') {
-              navigateTo('add-install');
-            } else {
-              navigateTo('main');
-            }
-          }}
-        />
+        {scanStatus === 'scanning' ? (
+          <Text dimColor>{spinner} Scanning skills for suspicious patterns...</Text>
+        ) : requiresManual ? (
+          <ManualSecurityGate
+            scanRows={scanRows}
+            manualView={manualView}
+            setManualView={setManualView}
+            selectedRow={selectedRow}
+            setSelectedRow={setSelectedRow}
+            confirmText={confirmText}
+            setConfirmText={setConfirmText}
+            wrapOnChange={wrapOnChange}
+            setFlash={setFlash}
+            onInstall={() => navigateTo('add-install')}
+            onCancel={() => resetTo('main')}
+          />
+        ) : (
+          <SelectMenu
+            items={[
+              { label: 'Install now', value: 'install' },
+              { label: 'Cancel', value: 'cancel' },
+            ]}
+            hint="Confirm to start installation"
+            onSelect={(item) => {
+              if (item.value === 'install') {
+                navigateTo('add-install');
+              } else {
+                resetTo('main');
+              }
+            }}
+          />
+        )}
       </Box>
     </Box>
   );

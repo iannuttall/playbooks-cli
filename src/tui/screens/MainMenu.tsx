@@ -9,6 +9,7 @@ export function MainMenu() {
     { label: 'Add docs', value: 'add-docs' },
     { label: 'Add skill', value: 'add' },
     { label: 'Find skill', value: 'find' },
+    { label: 'Scan skills', value: 'scan' },
     { label: 'List skills', value: 'list' },
     { label: 'Remove skills', value: 'manage' },
     { label: 'Update skills', value: 'update' },
@@ -39,6 +40,12 @@ export function MainMenu() {
               resetFindSkill();
               setInvocation({ intent: 'find-skill', options: {} });
               navigateTo('find-skill-search');
+              break;
+            case 'scan':
+              resetAddSkill();
+              resetFindSkill();
+              setInvocation({ intent: 'scan', options: {} });
+              navigateTo('scan-skills');
               break;
             case 'list':
               navigateTo('list');

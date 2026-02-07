@@ -118,7 +118,7 @@ export function AddSkillSelectScreen() {
           }
 
           keepTempDir = true;
-          navigateTo('add-targets');
+          navigateTo('add-security-scan');
           return;
         }
 
@@ -143,8 +143,13 @@ export function AddSkillSelectScreen() {
           const autoSelection = autoSelect(prepared.skills, options);
           if (autoSelection.status === 'selected') {
             keepTempDir = true;
-            updateAddSkill({ selectedSkills: autoSelection.skills });
-            navigateTo('add-targets');
+            updateAddSkill({
+              selectedSkills: autoSelection.skills,
+              securityBySkillName: undefined,
+              securityScanRows: undefined,
+              securityAccepted: undefined,
+            });
+            navigateTo('add-security-scan');
             return;
           }
 
@@ -211,8 +216,13 @@ export function AddSkillSelectScreen() {
           if (tempDir) {
             keepTempDir = true;
           }
-          updateAddSkill({ selectedSkills: autoSelection.skills });
-          navigateTo('add-targets');
+          updateAddSkill({
+            selectedSkills: autoSelection.skills,
+            securityBySkillName: undefined,
+            securityScanRows: undefined,
+            securityAccepted: undefined,
+          });
+          navigateTo('add-security-scan');
           return;
         }
 
@@ -364,8 +374,11 @@ export function AddSkillSelectScreen() {
             installGlobally: undefined,
             installMode: undefined,
             planLines: undefined,
+            securityBySkillName: undefined,
+            securityScanRows: undefined,
+            securityAccepted: undefined,
           });
-          navigateTo('add-targets');
+          navigateTo('add-security-scan');
         }}
       />
     </Box>
