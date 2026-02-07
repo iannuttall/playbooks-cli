@@ -1,0 +1,6 @@
+{
+  "scripts": {
+    "setup": "bash $CONDUCTOR_ROOT_PATH/scripts/conductor-setup.sh",
+    "run": "npm run dev"
+  }
+}
