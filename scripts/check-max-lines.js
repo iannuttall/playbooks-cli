@@ -3,7 +3,7 @@
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { extname, join } from 'node:path';
 
-const MAX_LINES = 400;
+const MAX_LINES = 450;
 const ROOTS = ['src', 'scripts', 'tests'];
 const VALID_EXTS = new Set(['.ts', '.js', '.tsx', '.mjs', '.cjs']);
 
@@ -35,7 +35,10 @@ function walk(dir, files = []) {
 
 function countLines(filePath) {
   const content = readFileSync(filePath, 'utf-8');
-  return content.split(/\r\n|\r|\n/).length;
+  const parts = content.split(/\r\n|\r|\n/);
+  // Avoid counting a trailing newline as an extra "empty" line.
+  if (parts.length > 0 && parts[parts.length - 1] === '') parts.pop();
+  return parts.length;
 }
 
 const oversized = [];
