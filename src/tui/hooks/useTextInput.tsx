@@ -12,13 +12,19 @@ export function useTextInput({ onClear, disabled = false }: UseTextInputOptions)
   const skipNextChangeRef = React.useRef(false);
 
   React.useEffect(() => {
+    if (disabled) {
+      setTextInputActive(false);
+      setTextInputEscMode('back');
+      return;
+    }
+
     setTextInputActive(true);
     setTextInputEscMode('back');
     return () => {
       setTextInputActive(false);
       setTextInputEscMode('back');
     };
-  }, [setTextInputActive, setTextInputEscMode]);
+  }, [disabled, setTextInputActive, setTextInputEscMode]);
 
   const clearValue = React.useCallback(() => {
     skipNextChangeRef.current = true;

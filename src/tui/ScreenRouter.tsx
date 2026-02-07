@@ -10,6 +10,7 @@ import { AddInstallScreen } from './screens/AddInstall.js';
 import { AddModeScreen } from './screens/AddMode.js';
 import { AddResultScreen } from './screens/AddResult.js';
 import { AddScopeScreen } from './screens/AddScope.js';
+import { AddSecurityScanScreen } from './screens/AddSecurityScan.js';
 import { AddSkillSelectScreen } from './screens/AddSkillSelect.js';
 import { AddSourceScreen } from './screens/AddSource.js';
 import { AddTargetsScreen } from './screens/AddTargets.js';
@@ -21,6 +22,7 @@ import { MainMenu } from './screens/MainMenu.js';
 import { ManageScreen } from './screens/ManageSkills.js';
 import { MarketplacePluginScreen } from './screens/MarketplacePlugins.js';
 import { MarketplaceSkillScreen } from './screens/MarketplaceSkills.js';
+import { ScanSkillsScreen } from './screens/ScanSkills.js';
 import { UpdateDocsScreen } from './screens/UpdateDocs.js';
 import { UpdateScreen } from './screens/UpdateSkills.js';
 
@@ -43,10 +45,14 @@ export function ScreenRouter() {
         return <FindSkillSearchScreen />;
       case 'find-skill-results':
         return <FindSkillResultsScreen />;
+      case 'scan-skills':
+        return <ScanSkillsScreen />;
       case 'get-url':
         return <GetUrlScreen />;
       case 'add-skill-select':
         return <AddSkillSelectScreen />;
+      case 'add-security-scan':
+        return <AddSecurityScanScreen />;
       case 'add-targets':
         return <AddTargetsScreen />;
       case 'add-scope':
