@@ -30,6 +30,7 @@ const applyAddSkillOptions = (cmd: Command) =>
     .option('-s, --skill <skills...>', 'Install specific skills by name')
     .option('-l, --list', 'List available skills in the repository without installing')
     .option('-y, --yes', 'Skip confirmation prompts')
+    .option('--license-key <key>', 'License key for paid/private skills')
     .option('--all', 'Install all skills to all agents without prompts (implies -y -g)');
 
 function normalizeOptions(options: Record<string, unknown>) {

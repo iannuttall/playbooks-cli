@@ -24,6 +24,8 @@ export interface SkillLockEntry {
   sourceType: string;
   /** The original URL used to install the skill (for re-fetching updates) */
   sourceUrl: string;
+  /** License key for paid/private skills (stored locally). */
+  licenseKey?: string;
   /** Subpath within the source repo, if applicable */
   skillPath?: string;
   /** Branch or ref used when installing (if applicable) */

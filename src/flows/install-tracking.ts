@@ -145,6 +145,10 @@ export async function recordParsedTracking(
         const hash = await fetchSkillFolderHash(normalizedSource, skillPathValue);
         if (hash) skillFolderHash = hash;
       }
+      // Well-known authenticated installs (paid/private) use the manifest contentHash as a folder hash.
+      if (parsed.type === 'well-known' && parsed.contentHash) {
+        skillFolderHash = parsed.contentHash;
+      }
 
       await addSkillToLock(
         displayName,
@@ -152,6 +156,9 @@ export async function recordParsedTracking(
           source: normalizedSource ?? parsed.url,
           sourceType: parsed.type,
           sourceUrl: parsed.url,
+          ...(parsed.type === 'well-known' && parsed.licenseKey
+            ? { licenseKey: parsed.licenseKey }
+            : {}),
           skillPath: skillPathValue,
           skillFolderHash,
           ref: parsed.ref,

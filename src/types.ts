@@ -63,6 +63,9 @@ export interface ParsedSource {
   subpath?: string;
   localPath?: string;
   ref?: string;
+  // well-known auth (paid/private skills)
+  licenseKey?: string;
+  contentHash?: string;
 }
 
 export interface MintlifySkill {

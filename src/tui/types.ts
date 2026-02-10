@@ -20,6 +20,7 @@ export type Screen =
   | 'find-skill-results'
   | 'scan-skills'
   | 'add-skill-select'
+  | 'add-license-key'
   | 'add-security-scan'
   | 'add-targets'
   | 'add-scope'
@@ -63,6 +64,7 @@ export type MarketplaceState = {
 export type AddSkillState = {
   source?: string;
   parsed?: ParsedSource;
+  licenseKey?: string;
   tempDir?: string | null;
   skills?: Skill[];
   selectedSkills?: Skill[];

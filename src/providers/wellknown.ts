@@ -5,11 +5,45 @@ export interface WellKnownIndex {
   skills: WellKnownSkillEntry[];
 }
 
-export interface WellKnownSkillEntry {
+export interface WellKnownAuth {
+  tokenHeader: string;
+  tokenPrefix?: string;
+}
+
+export interface WellKnownEndpoint {
+  endpoint: string;
+  method: string;
+}
+
+export interface WellKnownStaticSkillEntry {
   name: string;
   description: string;
   files: string[];
 }
+
+/**
+ * Authenticated well-known entry.
+ *
+ * Used for paid/private installs where content is fetched from an API endpoint
+ * instead of static files hosted at /.well-known/skills/<name>/...
+ */
+export interface WellKnownAuthedSkillEntry {
+  name: string;
+  description: string;
+  // Optional display metadata (not part of the core well-known spec).
+  displayName?: string;
+  publicId?: string;
+  productSlug?: string;
+  /**
+   * Shared auth info for verify/content. Preferred shape (avoids duplication).
+   * If omitted, tokenHeader/tokenPrefix may be present on verify/content for legacy manifests.
+   */
+  auth?: WellKnownAuth;
+  verify?: WellKnownEndpoint & Partial<WellKnownAuth>;
+  content: WellKnownEndpoint & Partial<WellKnownAuth>;
+}
+
+export type WellKnownSkillEntry = WellKnownStaticSkillEntry | WellKnownAuthedSkillEntry;
 
 export interface WellKnownSkill extends RemoteSkill {
   files: Map<string, string>;
@@ -41,8 +75,21 @@ export class WellKnownProvider implements HostProvider {
     try {
       const parsed = new URL(baseUrl);
       const basePath = parsed.pathname.replace(/\/$/, '');
+      const indexSuffix = `/${this.WELL_KNOWN_PATH}/${this.INDEX_FILE}`;
 
       const urlsToTry: { indexUrl: string; baseUrl: string }[] = [
+        // If the caller already passed the index.json URL, try it directly.
+        ...(basePath.endsWith(indexSuffix)
+          ? [
+              {
+                indexUrl: `${parsed.protocol}//${parsed.host}${basePath}`,
+                baseUrl: `${parsed.protocol}//${parsed.host}${basePath.slice(
+                  0,
+                  Math.max(0, basePath.length - indexSuffix.length)
+                )}`,
+              },
+            ]
+          : []),
         {
           indexUrl: `${parsed.protocol}//${parsed.host}${basePath}/${this.WELL_KNOWN_PATH}/${this.INDEX_FILE}`,
           baseUrl: `${parsed.protocol}//${parsed.host}${basePath}`,
@@ -96,7 +143,6 @@ export class WellKnownProvider implements HostProvider {
     const e = entry as Record<string, unknown>;
     if (typeof e.name !== 'string' || !e.name) return false;
     if (typeof e.description !== 'string' || !e.description) return false;
-    if (!Array.isArray(e.files) || e.files.length === 0) return false;
 
     const nameRegex = /^[a-z0-9]([a-z0-9-]{0,62}[a-z0-9])?$/;
     if (!nameRegex.test(e.name) && e.name.length > 1) {
@@ -105,13 +151,50 @@ export class WellKnownProvider implements HostProvider {
       }
     }
 
-    for (const file of e.files) {
-      if (typeof file !== 'string') return false;
-      if (file.startsWith('/') || file.startsWith('\\') || file.includes('..')) return false;
+    // Static entries must include files + SKILL.md.
+    if (Array.isArray(e.files) && e.files.length > 0) {
+      for (const file of e.files) {
+        if (typeof file !== 'string') return false;
+        if (file.startsWith('/') || file.startsWith('\\') || file.includes('..')) return false;
+      }
+
+      const hasSkillMd = e.files.some(
+        (f) => typeof f === 'string' && f.toLowerCase() === 'skill.md'
+      );
+      if (!hasSkillMd) return false;
+
+      return true;
     }
 
-    const hasSkillMd = e.files.some((f) => typeof f === 'string' && f.toLowerCase() === 'skill.md');
-    if (!hasSkillMd) return false;
+    // Authenticated entries must include "content" spec.
+    if (!e.content || typeof e.content !== 'object') return false;
+    const c = e.content as Record<string, unknown>;
+    if (typeof c.endpoint !== 'string' || !c.endpoint) return false;
+    if (typeof c.method !== 'string' || !c.method) return false;
+
+    // Auth can be shared (preferred) or duplicated per endpoint (legacy).
+    if (e.auth != null) {
+      if (typeof e.auth !== 'object') return false;
+      const a = e.auth as Record<string, unknown>;
+      if (typeof a.tokenHeader !== 'string' || !a.tokenHeader) return false;
+      if (a.tokenPrefix != null && typeof a.tokenPrefix !== 'string') return false;
+    } else {
+      // No shared auth: require tokenHeader on content.
+      if (typeof c.tokenHeader !== 'string' || !c.tokenHeader) return false;
+      if (c.tokenPrefix != null && typeof c.tokenPrefix !== 'string') return false;
+    }
+
+    if (e.verify != null) {
+      if (typeof e.verify !== 'object') return false;
+      const v = e.verify as Record<string, unknown>;
+      if (typeof v.endpoint !== 'string' || !v.endpoint) return false;
+      if (typeof v.method !== 'string' || !v.method) return false;
+      if (e.auth == null) {
+        // Legacy per-endpoint auth.
+        if (typeof v.tokenHeader !== 'string' || !v.tokenHeader) return false;
+        if (v.tokenPrefix != null && typeof v.tokenPrefix !== 'string') return false;
+      }
+    }
 
     return true;
   }
@@ -170,6 +253,11 @@ export class WellKnownProvider implements HostProvider {
     entry: WellKnownSkillEntry
   ): Promise<WellKnownSkill | null> {
     try {
+      // Authenticated entries are handled by the install flow (they return a manifest, not static SKILL.md).
+      if (!('files' in entry)) {
+        return null;
+      }
+
       const skillBaseUrl = `${baseUrl.replace(/\/$/, '')}/${this.WELL_KNOWN_PATH}/${entry.name}`;
       const skillMdUrl = `${skillBaseUrl}/SKILL.md`;
       const response = await fetch(skillMdUrl);

@@ -7,6 +7,7 @@ import { FlashBar } from './ui/FlashBar.js';
 import { AddConfirmScreen } from './screens/AddConfirm.js';
 import { AddDocsScreen } from './screens/AddDocs.js';
 import { AddInstallScreen } from './screens/AddInstall.js';
+import { AddLicenseKeyScreen } from './screens/AddLicenseKey.js';
 import { AddModeScreen } from './screens/AddMode.js';
 import { AddResultScreen } from './screens/AddResult.js';
 import { AddScopeScreen } from './screens/AddScope.js';
@@ -51,6 +52,8 @@ export function ScreenRouter() {
         return <GetUrlScreen />;
       case 'add-skill-select':
         return <AddSkillSelectScreen />;
+      case 'add-license-key':
+        return <AddLicenseKeyScreen />;
       case 'add-security-scan':
         return <AddSecurityScanScreen />;
       case 'add-targets':

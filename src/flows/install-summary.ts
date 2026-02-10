@@ -32,7 +32,11 @@ export function formatResultSummary(results: InstallResult[]): { title: string; 
 
     if (firstResult.mode === 'copy') {
       lines.push(`${chalk.green('✓')} ${skillName} ${chalk.dim('(copied)')}`);
+      const seenPaths = new Set<string>();
       for (const r of skillResults) {
+        // Universal agents can share a single skill directory; avoid printing the same path N times.
+        if (seenPaths.has(r.path)) continue;
+        seenPaths.add(r.path);
         const shortPath = shortenPath(r.path, cwd);
         lines.push(`  ${chalk.dim('→')} ${shortPath}`);
       }

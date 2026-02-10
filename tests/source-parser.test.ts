@@ -148,6 +148,19 @@ test('Git URL - custom host', () => {
   assert.strictEqual(result.url, 'https://git.example.com/owner/repo.git');
 });
 
+// Playbooks paid products are discovered via well-known (no special-casing).
+test('Playbooks paid product URL - scheme-less /p/:publicId (well-known)', () => {
+  const result = parseSource('playbooks.com/p/dz98g8jqk');
+  assert.strictEqual(result.type, 'well-known');
+  assert.strictEqual(result.url, 'https://playbooks.com/p/dz98g8jqk');
+});
+
+test('Well-known URL - explicit index.json path stays well-known', () => {
+  const result = parseSource('https://playbooks.com/p/dz98g8jqk/.well-known/skills/index.json');
+  assert.strictEqual(result.type, 'well-known');
+  assert.strictEqual(result.url, 'https://playbooks.com/p/dz98g8jqk/.well-known/skills/index.json');
+});
+
 // Well-known URL tests
 test('Well-known URL - basic', () => {
   const result = parseSource('https://mintlify.com/docs');

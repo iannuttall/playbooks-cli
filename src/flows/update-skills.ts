@@ -1,15 +1,17 @@
-import { mkdir, mkdtemp, rm, stat, writeFile } from 'node:fs/promises';
-import { tmpdir } from 'node:os';
+import { randomUUID } from 'node:crypto';
+import { cp, mkdir, mkdtemp, rm, stat, writeFile } from 'node:fs/promises';
+import { homedir, tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { cleanupTempDir, cloneRepo } from '../git.js';
 import { type SkillScope, findSkillInstallations } from '../installed-skills.js';
 import { copySkillDirectory, getCanonicalPath } from '../installer.js';
-import { isPathSafe } from '../installer/paths.js';
+import { isPathSafe, sanitizeSkillName } from '../installer/paths.js';
 import { fetchMintlifySkill } from '../mintlify.js';
 import { findProvider } from '../providers/index.js';
 import { type SkillLockEntry, addSkillToLock, getAllLockedSkills } from '../skill-lock.js';
 import { discoverSkills } from '../skills.js';
 import { registerTempDir } from '../temp-registry.js';
+import { updateFromWellKnownAuthed } from './update-well-known-authed.js';
 
 export type UpdateStatus = 'needs-update' | 'up-to-date' | 'unknown';
 
@@ -105,6 +107,35 @@ async function pathExists(path: string): Promise<boolean> {
   }
 }
 
+function getBackupRoot(scope: SkillScope): string {
+  // Global installs are user-level; project installs are relative to the current working directory.
+  const baseDir = scope === 'global' ? homedir() : process.cwd();
+  return join(baseDir, '.playbooks', 'backups');
+}
+
+async function backupDirIfExists(input: {
+  scope: SkillScope;
+  skillName: string;
+  sourcePath: string;
+  label: string;
+}): Promise<void> {
+  if (process.env.PLAYBOOKS_DISABLE_BACKUPS === '1') return;
+
+  try {
+    if (!(await pathExists(input.sourcePath))) return;
+
+    const stamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const safeSkillName = sanitizeSkillName(input.skillName);
+    const backupBase = join(getBackupRoot(input.scope), stamp, input.scope, safeSkillName);
+    const dest = join(backupBase, `${input.label}-${randomUUID()}`);
+
+    await mkdir(dirname(dest), { recursive: true });
+    await cp(input.sourcePath, dest, { recursive: true, dereference: false });
+  } catch {
+    // Silent best-effort: backups should never block an update.
+  }
+}
+
 async function applyUpdateFromDir(
   skillName: string,
   scope: SkillScope,
@@ -120,6 +151,7 @@ async function applyUpdateFromDir(
   }
 
   if (canonicalExists || hasSymlink) {
+    await backupDirIfExists({ scope, skillName, sourcePath: canonicalPath, label: 'canonical' });
     await rm(canonicalPath, { recursive: true, force: true });
     await copySkillDirectory(sourceDir, canonicalPath);
   }
@@ -128,6 +160,7 @@ async function applyUpdateFromDir(
 
   if (updateTargets.length > 0) {
     for (const install of updateTargets) {
+      await backupDirIfExists({ scope, skillName, sourcePath: install.path, label: 'install' });
       await rm(install.path, { recursive: true, force: true });
       await copySkillDirectory(sourceDir, install.path);
     }
@@ -215,6 +248,12 @@ async function updateFromRemote(target: UpdateTarget): Promise<boolean> {
 }
 
 async function updateTargetSkill(target: UpdateTarget): Promise<boolean> {
+  if (target.entry.sourceType === 'well-known' && target.entry.licenseKey) {
+    const updated = await updateFromWellKnownAuthed(target, { applyUpdateFromDir, pathExists });
+    if (updated) return true;
+    // Fall through to regular well-known update behavior if this wasn't an authed manifest.
+  }
+
   if (
     target.entry.sourceType === 'github' ||
     target.entry.sourceType === 'gitlab' ||

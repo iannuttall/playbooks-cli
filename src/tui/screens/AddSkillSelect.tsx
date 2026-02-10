@@ -1,11 +1,14 @@
 import { existsSync } from 'node:fs';
 import { mkdir, mkdtemp, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 import { Box, Text } from 'ink';
 import React from 'react';
 import { resolveRemoteSkill } from '../../flows/remote-skill.js';
-import { prepareWellKnownSkills } from '../../flows/well-known-skills.js';
+import {
+  WellKnownLicenseKeyRequiredError,
+  prepareWellKnownSkills,
+} from '../../flows/well-known-skills.js';
 import { cleanupTempDir, cloneRepo } from '../../git.js';
 import { isMarketplaceSource, loadMarketplace, normalizePlugins } from '../../marketplace.js';
 import { discoverSkills, getSkillDisplayName } from '../../skills.js';
@@ -123,11 +126,29 @@ export function AddSkillSelectScreen() {
         }
 
         if (parsed.type === 'well-known') {
-          const prepared = await prepareWellKnownSkills(parsed.url);
+          const licenseKey = addSkill.licenseKey ?? options.licenseKey ?? parsed.licenseKey;
+          let prepared: Awaited<ReturnType<typeof prepareWellKnownSkills>>;
+          try {
+            prepared = await prepareWellKnownSkills(parsed.url, { licenseKey });
+          } catch (err) {
+            if (err instanceof WellKnownLicenseKeyRequiredError) {
+              updateAddSkill({ parsed });
+              navigateTo('add-license-key');
+              return;
+            }
+            throw err;
+          }
           tempDirForCleanup = prepared.tempDir;
 
+          const nextParsed = {
+            ...parsed,
+            ...(licenseKey ? { licenseKey } : {}),
+            ...(prepared.contentHash ? { contentHash: prepared.contentHash } : {}),
+          };
+
           updateAddSkill({
-            parsed,
+            parsed: nextParsed,
+            ...(licenseKey ? { licenseKey } : {}),
             tempDir: prepared.tempDir,
             skills: prepared.skills,
             originBySkillName: prepared.originBySkillName,
@@ -258,7 +279,7 @@ export function AddSkillSelectScreen() {
     return () => {
       cancelled = true;
     };
-  }, [source, addSkill.skills, updateAddSkill, navigateTo, options, setFlash]);
+  }, [source, addSkill.skills, addSkill.licenseKey, updateAddSkill, navigateTo, options, setFlash]);
 
   React.useEffect(() => {
     if (invocation.source) {

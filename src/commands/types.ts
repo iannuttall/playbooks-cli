@@ -7,6 +7,7 @@ export interface AddSkillOptions {
   skill?: string[];
   list?: boolean;
   all?: boolean;
+  licenseKey?: string;
 }
 
 export type SkillSourceType =
