@@ -20,6 +20,7 @@ export type Screen =
   | 'find-skill-results'
   | 'scan-skills'
   | 'add-skill-select'
+  | 'add-bundle-select'
   | 'add-license-key'
   | 'add-security-scan'
   | 'add-targets'
@@ -36,6 +37,7 @@ export type Screen =
 export type CliIntent =
   | 'none'
   | 'add-skill'
+  | 'add-bundle'
   | 'add-docs'
   | 'skill'
   | 'scan'
