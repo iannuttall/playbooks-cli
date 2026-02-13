@@ -123,6 +123,15 @@ applyAddSkillOptions(
     })
 );
 
+applyAddSkillOptions(
+  addCmd
+    .command('bundle <slug>')
+    .description('Add all skills from a bundle')
+    .action(async (slug: string, options) => {
+      await launch({ intent: 'add-bundle', source: slug, options }, 'add-bundle-select');
+    })
+);
+
 addCmd
   .command('docs')
   .description('Add docs')

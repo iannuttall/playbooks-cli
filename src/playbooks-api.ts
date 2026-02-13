@@ -125,6 +125,69 @@ async function pollUrlMarkdown(jobId: string, timeoutMs = 60_000, pollIntervalMs
   throw new Error('Timed out waiting for markdown');
 }
 
+export type BundleSkillEntry = {
+  id: number;
+  name: string;
+  description: string | null;
+  shortDescription: string | null;
+  repoOwner: string | null;
+  repoName: string | null;
+  path: string | null;
+  skillSlug: string | null;
+  isOfficial: boolean;
+  position: number;
+};
+
+export type BundleInfo = {
+  bundle: {
+    id: number;
+    slug: string;
+    name: string;
+    description: string | null;
+    skillCount: number;
+  };
+  skills: BundleSkillEntry[];
+};
+
+type BundleResponse = {
+  success: boolean;
+  bundle?: BundleInfo['bundle'];
+  skills?: BundleSkillEntry[];
+  error?: string;
+};
+
+export async function fetchBundle(slug: string): Promise<BundleInfo> {
+  const url = new URL(`${API_BASE}/bundles/${encodeURIComponent(slug)}`);
+
+  const response = await fetch(url.toString(), {
+    headers: {
+      'User-Agent': USER_AGENT,
+    },
+  });
+
+  let payload: BundleResponse | null = null;
+  try {
+    payload = (await response.json()) as BundleResponse;
+  } catch {
+    payload = null;
+  }
+
+  if (response.status === 404) {
+    throw new Error(`Bundle "${slug}" not found.`);
+  }
+
+  if (!response.ok || !payload?.success) {
+    const message = payload?.error || `Failed to fetch bundle (${response.status})`;
+    throw new Error(message);
+  }
+
+  if (!payload.bundle || !payload.skills) {
+    throw new Error('Invalid bundle response.');
+  }
+
+  return { bundle: payload.bundle, skills: payload.skills };
+}
+
 export async function fetchUrlMarkdown(url: string): Promise<UrlMarkdownResult> {
   const response = await requestUrlMarkdown(url);
 

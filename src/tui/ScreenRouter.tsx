@@ -4,6 +4,7 @@ import type { Screen } from './types.js';
 import { BrandHeader } from './ui/BrandHeader.js';
 import { FlashBar } from './ui/FlashBar.js';
 
+import { AddBundleSelectScreen } from './screens/AddBundleSelect.js';
 import { AddConfirmScreen } from './screens/AddConfirm.js';
 import { AddDocsScreen } from './screens/AddDocs.js';
 import { AddInstallScreen } from './screens/AddInstall.js';
@@ -52,6 +53,8 @@ export function ScreenRouter() {
         return <GetUrlScreen />;
       case 'add-skill-select':
         return <AddSkillSelectScreen />;
+      case 'add-bundle-select':
+        return <AddBundleSelectScreen />;
       case 'add-license-key':
         return <AddLicenseKeyScreen />;
       case 'add-security-scan':
