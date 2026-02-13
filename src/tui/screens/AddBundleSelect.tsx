@@ -36,7 +36,9 @@ function groupByRepo(skills: BundleSkillEntry[]): Map<string, BundleSkillEntry[]
  * a display name (e.g. "React Best Practices").
  */
 function findMatchingSkill(discovered: Skill[], entry: BundleSkillEntry): Skill | undefined {
-  const targets = [entry.name, entry.skillSlug].filter(Boolean).map((t) => t.toLowerCase());
+  const targets = [entry.name, entry.skillSlug]
+    .filter((t): t is string => Boolean(t))
+    .map((t) => t.toLowerCase());
 
   for (const skill of discovered) {
     const candidates = [skill.name.toLowerCase(), basename(skill.path).toLowerCase()];
