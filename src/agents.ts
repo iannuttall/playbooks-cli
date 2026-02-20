@@ -94,6 +94,15 @@ export const agents: Record<AgentType, AgentConfig> = {
       return existsSync(join(process.cwd(), '.continue')) || existsSync(join(home, '.continue'));
     },
   },
+  cortex: {
+    name: 'cortex',
+    displayName: 'Cortex Code',
+    skillsDir: '.cortex/skills',
+    globalSkillsDir: join(home, '.snowflake/cortex/skills'),
+    detectInstalled: async () => {
+      return existsSync(join(home, '.snowflake/cortex'));
+    },
+  },
   crush: {
     name: 'crush',
     displayName: 'Crush',
@@ -106,7 +115,7 @@ export const agents: Record<AgentType, AgentConfig> = {
   cursor: {
     name: 'cursor',
     displayName: 'Cursor',
-    skillsDir: '.cursor/skills',
+    skillsDir: '.agents/skills',
     globalSkillsDir: join(home, '.cursor/skills'),
     detectInstalled: async () => existsSync(join(home, '.cursor')),
   },
@@ -363,6 +372,14 @@ export const agents: Record<AgentType, AgentConfig> = {
       return existsSync(join(home, '.zencoder'));
     },
   },
+  universal: {
+    name: 'universal',
+    displayName: 'Universal',
+    skillsDir: '.agents/skills',
+    globalSkillsDir: universalGlobalSkillsDir,
+    showInUniversalList: false,
+    detectInstalled: async () => false,
+  },
 };
 
 export async function detectInstalledAgents(): Promise<AgentType[]> {
@@ -382,7 +399,9 @@ export function getAgentConfig(type: AgentType): AgentConfig {
 /** Returns agents that use the universal .agents/skills directory. */
 export function getUniversalAgents(): AgentType[] {
   return (Object.entries(agents) as [AgentType, AgentConfig][])
-    .filter(([_, config]) => config.skillsDir === '.agents/skills')
+    .filter(
+      ([_, config]) => config.skillsDir === '.agents/skills' && config.showInUniversalList !== false
+    )
     .map(([type]) => type);
 }
 

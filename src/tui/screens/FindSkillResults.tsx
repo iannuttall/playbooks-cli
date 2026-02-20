@@ -17,16 +17,33 @@ const formatStars = (value: number | null) => {
   return `${value}`;
 };
 
+const formatInstalls = (value: number | null) => {
+  if (!value || value <= 0) return '';
+  if (value >= 1_000_000) {
+    const rounded = (value / 1_000_000).toFixed(1).replace(/\.0$/, '');
+    return `${rounded}M`;
+  }
+  if (value >= 1000) {
+    const rounded = (value / 1000).toFixed(1).replace(/\.0$/, '');
+    return `${rounded}k`;
+  }
+  return `${value}`;
+};
+
 const buildLabel = (result: FindSkillResult) => {
   const owner = result.repoOwner ?? 'unknown';
   const repo = result.repoName ?? 'repo';
   const stars = formatStars(result.stars ?? null);
+  const installs = formatInstalls(result.installCount ?? null);
   const suffixParts = [] as string[];
   if (result.isOfficial) {
     suffixParts.push('official');
   }
   if (stars) {
     suffixParts.push(`stars:${stars}`);
+  }
+  if (installs) {
+    suffixParts.push(`installs:${installs}`);
   }
   const suffix = suffixParts.length > 0 ? ` ${suffixParts.join(' | ')}` : '';
   return `${result.name} (${owner}/${repo})${suffix}`.trim();

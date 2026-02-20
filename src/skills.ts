@@ -86,6 +86,11 @@ async function parseSkillMd(skillMdPath: string): Promise<Skill | null> {
       return null;
     }
 
+    // YAML frontmatter can coerce values (number/bool/array). Require strings.
+    if (typeof data.name !== 'string' || typeof data.description !== 'string') {
+      return null;
+    }
+
     return {
       name: data.name,
       description: data.description,
@@ -220,6 +225,7 @@ export async function discoverSkills(basePath: string, subpath?: string): Promis
     join(searchPath, '.codex/skills'),
     join(searchPath, '.commandcode/skills'),
     join(searchPath, '.continue/skills'),
+    join(searchPath, '.cortex/skills'),
     join(searchPath, '.crush/skills'),
     join(searchPath, '.cursor/skills'),
     join(searchPath, '.factory/skills'),

@@ -268,8 +268,9 @@ Skills can be installed to any of these supported agents. Use `-g, --global` to 
 | Codex | `codex` | `.agents/skills/` | `~/.agents/skills/` |
 | Command Code | `command-code` | `.commandcode/skills/` | `~/.commandcode/skills/` |
 | Continue | `continue` | `.continue/skills/` | `~/.continue/skills/` |
+| Cortex Code | `cortex` | `.cortex/skills/` | `~/.snowflake/cortex/skills/` |
 | Crush | `crush` | `.crush/skills/` | `~/.config/crush/skills/` |
-| Cursor | `cursor` | `.cursor/skills/` | `~/.cursor/skills/` |
+| Cursor | `cursor` | `.agents/skills/` | `~/.cursor/skills/` |
 | Droid | `droid` | `.agents/skills/` | `~/.agents/skills/` |
 | Gemini CLI | `gemini-cli` | `.agents/skills/` | `~/.agents/skills/` |
 | GitHub Copilot | `github-copilot` | `.agents/skills/` | `~/.agents/skills/` |
@@ -297,6 +298,7 @@ Skills can be installed to any of these supported agents. Use `-g, --global` to 
 | Trae CN | `trae-cn` | `.trae/skills/` | `~/.trae-cn/skills/` |
 | Windsurf | `windsurf` | `.windsurf/skills/` | `~/.codeium/windsurf/skills/` |
 | Zencoder | `zencoder` | `.zencoder/skills/` | `~/.zencoder/skills/` |
+| Universal | `universal` | `.agents/skills/` | `~/.agents/skills/` |
 <!-- available-agents:end -->
 
 > [!NOTE]
@@ -360,8 +362,8 @@ The CLI searches for skills in these locations within a repository:
 - `.codebuddy/skills/`
 - `.commandcode/skills/`
 - `.continue/skills/`
+- `.cortex/skills/`
 - `.crush/skills/`
-- `.cursor/skills/`
 - `.goose/skills/`
 - `.iflow/skills/`
 - `.junie/skills/`

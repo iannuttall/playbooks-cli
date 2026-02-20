@@ -9,6 +9,7 @@ export type AgentType =
   | 'codex'
   | 'command-code'
   | 'continue'
+  | 'cortex'
   | 'crush'
   | 'cursor'
   | 'droid'
@@ -37,7 +38,8 @@ export type AgentType =
   | 'trae'
   | 'trae-cn'
   | 'windsurf'
-  | 'zencoder';
+  | 'zencoder'
+  | 'universal';
 
 export interface Skill {
   name: string;
@@ -55,6 +57,8 @@ export interface AgentConfig {
   skillsDir: string;
   globalSkillsDir: string | undefined;
   detectInstalled: () => Promise<boolean>;
+  /** Whether this agent should appear in the universal agent chooser list. Defaults to true. */
+  showInUniversalList?: boolean;
 }
 
 export interface ParsedSource {

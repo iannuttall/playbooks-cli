@@ -1,6 +1,6 @@
 {
   "name": "playbooks",
-  "version": "0.1.19",
+  "version": "0.1.20",
   "description": "Install agent skills, MCPs and docs into your coding agents from any git repository.",
   "type": "module",
   "bin": {
@@ -45,6 +45,7 @@
     "codex",
     "command-code",
     "continue",
+    "cortex",
     "crush",
     "cursor",
     "droid",
@@ -73,7 +74,8 @@
     "trae",
     "trae-cn",
     "windsurf",
-    "zencoder"
+    "zencoder",
+    "universal"
   ],
   "homepage": "https://playbooks.com",
   "author": "",

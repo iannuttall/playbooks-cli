@@ -88,13 +88,28 @@ function formatFindSkillMarkdown(query: string, outcome: SearchOutcome): string 
       continue;
     }
     const tag = result.isOfficial ? '[official]' : '[community]';
-    lines.push(`- ${tag} npx playbooks add skill ${repo} --skill ${skillName}`);
+    const installs = formatInstallCount(result.installCount ?? null);
+    const installsText = installs ? ` ${installs}` : '';
+    lines.push(`- ${tag}${installsText} npx playbooks add skill ${repo} --skill ${skillName}`);
     if (description) {
       lines.push(`  ${truncateLine(description, 140)}`);
     }
   }
 
   return lines.join('\n');
+}
+
+function formatInstallCount(value: number | null): string {
+  if (!value || value <= 0) return '';
+  if (value >= 1_000_000) {
+    const rounded = (value / 1_000_000).toFixed(1).replace(/\.0$/, '');
+    return `(${rounded}M installs)`;
+  }
+  if (value >= 1000) {
+    const rounded = (value / 1000).toFixed(1).replace(/\.0$/, '');
+    return `(${rounded}k installs)`;
+  }
+  return `(${value} install${value === 1 ? '' : 's'})`;
 }
 
 function truncateLine(value: string, maxLength: number): string {

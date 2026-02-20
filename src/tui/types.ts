@@ -97,6 +97,7 @@ export type FindSkillResult = {
   skillSlug: string | null;
   primaryLanguage: string | null;
   stars: number | null;
+  installCount: number | null;
   tags: string[] | null;
   isOfficial: boolean;
 };
